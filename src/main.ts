@@ -145,11 +145,15 @@ window.addEventListener("mousedown", () => (clicked = true));
 window.addEventListener("mouseup", () => (clicked = false));
 
 function buildScene() {
-  const canvas = document.querySelector("#app > canvas")!;
-  const planetAmplitudeElement = document.getElementById("planetAmplitude")!;
-  const waterLevelElement = document.getElementById("waterLevel")!;
-  const planetAmplitude = () => planetAmplitudeElement.value / 100;
-  const waterLevel = () => waterLevelElement.value / 100;
+  const canvas = document.querySelector("#app > canvas") as HTMLCanvasElement;
+  const planetAmplitudeElement = document.getElementById(
+    "planetAmplitude",
+  ) as HTMLInputElement;
+  const waterLevelElement = document.getElementById(
+    "waterLevel",
+  ) as HTMLInputElement;
+  const planetAmplitude = () => Number(planetAmplitudeElement.value) / 100;
+  const waterLevel = () => Number(waterLevelElement.value) / 100;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
@@ -208,7 +212,7 @@ function buildScene() {
   dot.userData.ignore = true;
   // planet.add(dot);
 
-  function getCanvasRelativePosition(event) {
+  function getCanvasRelativePosition(event: MouseEvent) {
     const rect = canvas.getBoundingClientRect();
     return {
       x: ((event.clientX - rect.left) * canvas.width) / rect.width,
@@ -219,7 +223,7 @@ function buildScene() {
   const pickPosition = new THREE.Vector2();
   clearPickPosition();
 
-  function setPickPosition(event) {
+  function setPickPosition(event: MouseEvent) {
     const pos = getCanvasRelativePosition(event);
     pickPosition.x = (pos.x / canvas.width) * 2 - 1;
     pickPosition.y = (pos.y / canvas.height) * -2 + 1; // note we flip Y
@@ -260,7 +264,7 @@ function buildScene() {
   scene.add(s);
   scene.add(s2);
 
-  let selectedPosition;
+  let selectedPosition: THREE.Vector3;
 
   const lookTarget = new THREE.Object3D();
   camera.add(lookTarget);
