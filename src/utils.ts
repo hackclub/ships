@@ -59,12 +59,16 @@ function hexToRgb(hex: number): [number, number, number] {
 }
 
 // Convert sRGB to linear RGB
-function sRgbToLinear(c) {
+function sRgbToLinear(c: number): number {
   return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
 }
 
 // Convert linear RGB to OKLab
-function linearRgbToOklab(r, g, b) {
+function linearRgbToOklab(
+  r: number,
+  g: number,
+  b: number,
+): [number, number, number] {
   // Linear RGB to XYZ
   const l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
   const m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
@@ -83,7 +87,11 @@ function linearRgbToOklab(r, g, b) {
 }
 
 // Convert OKLab to linear RGB
-function oklabToLinearRgb(L, a, b) {
+function oklabToLinearRgb(
+  L: number,
+  a: number,
+  b: number,
+): [number, number, number] {
   const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
   const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
   const s_ = L - 0.0894841775 * a - 1.291485548 * b;
@@ -100,12 +108,12 @@ function oklabToLinearRgb(L, a, b) {
 }
 
 // Convert linear RGB to sRGB
-function linearToSrgb(c) {
+function linearToSrgb(c: number): number {
   return c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
 }
 
 // Convert RGB to hex
-function rgbToHex(r, g, b) {
+function rgbToHex(r: number, g: number, b: number): number {
   r = Math.max(0, Math.min(1, r));
   g = Math.max(0, Math.min(1, g));
   b = Math.max(0, Math.min(1, b));
@@ -118,7 +126,11 @@ function rgbToHex(r, g, b) {
 }
 
 // Main interpolation function
-export function interpolateOklab(color1, color2, t) {
+export function interpolateOklab(
+  color1: number,
+  color2: number,
+  t: number,
+): number {
   // Convert hex to OKLab
   const [r1, g1, b1] = hexToRgb(color1);
   const [r2, g2, b2] = hexToRgb(color2);
