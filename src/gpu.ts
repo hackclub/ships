@@ -272,7 +272,12 @@ ${water}
       // Map from [-1,1] to [0,1]
       float r = vNoise;//0.5 + 0.5 * noise;
 
-      vec3 col = r > waterLevel ? vec3(10./255., 236./255., 11./255.) : mix(vec3(11./255., 151./255., 235./255.), water(uv), scrollPos);
+      // vec3 col = r > 0.75 ? r > 0.65 ? vec3(105./255., 52./255., 34./255.) : vec3(1., 1., 1.) : r > waterLevel ? vec3(10./255., 236./255., 11./255.) : mix(vec3(11./255., 151./255., 235./255.), water(uv), scrollPos);
+      vec3 col = r <= waterLevel ? mix(vec3(11./255., 151./255., 235./255.), water(uv), scrollPos) :
+                 r <=0.67 ? vec3(10./255., 236./255., 11./255.) :
+                 r <=0.72 ? vec3(105./255., 52./255., 34./255.) :
+                 r <= 0.76 ? vec3(135./255., 135./255., 135./255.) :
+                 vec3(1., 1., 1.);
 
       gl_FragColor = vec4(col, 1.0);
   }
