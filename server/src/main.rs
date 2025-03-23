@@ -23,8 +23,10 @@ fn get_ships() -> Result<Vec<SanitisedShip>, Box<dyn Error>> {
         .map(|record| {
             let r = record.expect("a record");
 
+            // print!("{}", r.get(1).unwrap().to_owned());
+
             return SanitisedShip {
-                ysws: r.get(2).unwrap().to_owned(),
+                ysws: r.get(1).unwrap().to_owned(),
                 code_url: r.get(11).unwrap().to_owned(),
                 demo_url: r.get(10).unwrap().to_owned(),
                 // screenshot_url: r.get(12).unwrap().to_owned(),
