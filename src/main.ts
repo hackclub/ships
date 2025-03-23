@@ -140,9 +140,9 @@ window.addEventListener("wheel", (e) => {
   console.log(scrollPos);
 });
 
-let clicked = false;
-window.addEventListener("mousedown", () => (clicked = true));
-window.addEventListener("mouseup", () => (clicked = false));
+// let clicked = false;
+// window.addEventListener("mousedown", () => (clicked = true));
+// window.addEventListener("mouseup", () => (clicked = false));
 
 function buildScene() {
   const canvas = document.querySelector("#app > canvas") as HTMLCanvasElement;
@@ -270,7 +270,7 @@ function buildScene() {
   camera.add(lookTarget);
 
   function render(time: number) {
-    time *= 0.00000001;
+    console.log(time);
 
     material.uniforms.time.value = time;
     material.uniforms.waterLevel.value = waterLevel();
