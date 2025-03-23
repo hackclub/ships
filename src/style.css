@@ -27,3 +27,10 @@ body {
         height: 100%;
     }
 }
+
+#details {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    color: white;
+}

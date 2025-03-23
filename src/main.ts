@@ -2,6 +2,7 @@ import "./style.css";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
+//@ts-expect-error It wants three.meshline types
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import * as Utils from "./utils";
 import { fragmentShader, vertexShader, NoisePointGenerator } from "./gpu";
@@ -82,7 +83,7 @@ async function buildScene() {
   const gltfLoader = new GLTFLoader();
 
   gltfLoader.load(
-    "public/ship_lod0.gltf",
+    "public/ship.gltf",
     (gltf) => {
       const shipGeometry = (gltf.scene.children[0] as THREE.Mesh).geometry;
       const shipScale = 0.01;
@@ -301,7 +302,7 @@ async function buildScene() {
     material.uniforms.planetAmplitude.value = planetAmplitude();
     material.uniforms.scrollPos.value = scrollPos;
 
-    // planet.rotation.y += scrollPos === 0 ? 0.005 : 0;
+    planet.rotation.y += scrollPos === 0 ? 0.001 : 0;
 
     if (scrollPos <= 0) {
       const objects = pickHelper.pick(pickPosition, scene, camera);
@@ -318,7 +319,21 @@ async function buildScene() {
           shipCount,
         );
         if (nearestShip.position && nearestShip.distance < 0.1) {
-          console.log(shipsData[nearestShip.index]);
+          const si = shipsData[nearestShip.index];
+          console.log(si);
+
+          let url = si.code_url;
+          try {
+            url = new URL(url).pathname;
+          } catch (e) {}
+
+          document.getElementById("details")!.innerHTML = `
+<span style="font-size: 1.2em; font-weight: bold;">${si.ysws}</span>
+<br />
+<span>${url}</span>
+<br />
+<span>${si.country ? `From ${si.country}.` : ""}${si.hours ? ` Took ${si.hours} hours.` : ""}<span>
+`;
           s.material.color = new THREE.Color(0xff0000);
 
           s.position.copy(planet.localToWorld(nearestShip.position.clone()));
@@ -389,7 +404,7 @@ async function buildScene() {
       s2.quaternion.setFromRotationMatrix(rotMatrix2);
 
       s2.position.add(
-        up2.multiplyScalar(0.015).add(normal2.multiplyScalar(0.1)),
+        up2.multiplyScalar(0.015).add(normal2.multiplyScalar(0.03)),
       );
 
       selectedPosition = p;

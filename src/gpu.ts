@@ -241,8 +241,7 @@ export const vertexShader = `
       vNormal = normal;
       vNoise = max(waterLevel, fbm(normalize(vPosition)));
 
-
-      vec3 newPosition = position + normal * (vNoise - 0.5) * planetAmplitude;
+      vec3 newPosition = position + normal * (vNoise - .65) * planetAmplitude;
 
       gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
   }
