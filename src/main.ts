@@ -19,11 +19,16 @@ window.addEventListener("wheel", (e) => {
 // window.addEventListener("mousedown", () => (clicked = true));
 // window.addEventListener("mouseup", () => (clicked = false));
 
-function buildScene() {
+async function buildScene() {
+  const shipsData = await fetch("http://localhost:8080/ships").then((d) =>
+    d.json(),
+  );
+  console.log({ shipsData });
+
   const stats = new Stats();
   document.body.appendChild(stats.dom);
 
-  const shipCount = 10_000;
+  const shipCount = shipsData.length;
   let ships: THREE.InstancedMesh;
 
   const canvas = document.querySelector("#app > canvas") as HTMLCanvasElement;
@@ -301,7 +306,6 @@ function buildScene() {
     if (scrollPos <= 0) {
       const objects = pickHelper.pick(pickPosition, scene, camera);
 
-      console.log({ objects });
       const object = objects.find((o) => o.object.userData.isPlanet);
       const p = object?.point || new THREE.Vector3();
       s.position.copy(p);
@@ -313,8 +317,8 @@ function buildScene() {
           ships,
           shipCount,
         );
-        console.log({ nearestShip });
         if (nearestShip.position && nearestShip.distance < 0.1) {
+          console.log(shipsData[nearestShip.index]);
           s.material.color = new THREE.Color(0xff0000);
 
           s.position.copy(planet.localToWorld(nearestShip.position.clone()));
