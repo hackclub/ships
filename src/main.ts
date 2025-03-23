@@ -1,5 +1,7 @@
 import "./style.css";
 import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import Stats from "three/addons/libs/stats.module.js";
 import * as Utils from "./utils";
 import { fragmentShader, vertexShader, NoisePointGenerator } from "./gpu";
 
@@ -17,6 +19,11 @@ window.addEventListener("wheel", (e) => {
 // window.addEventListener("mouseup", () => (clicked = false));
 
 function buildScene() {
+  const stats = new Stats();
+  document.body.appendChild(stats.dom);
+
+  const shipCount = 10_000;
+
   const canvas = document.querySelector("#app > canvas") as HTMLCanvasElement;
   const planetAmplitudeElement = document.getElementById(
     "planetAmplitude",
@@ -60,10 +67,124 @@ function buildScene() {
   const planet = new THREE.Group();
   planet.add(sphere);
   planet.rotation.z = Utils.rad(23.5);
-  scene.add(planet);
-  // planet.add(camera);
-
   camera.position.z = 2;
+  scene.add(planet);
+
+  const gltfLoader = new GLTFLoader();
+
+  gltfLoader.load(
+    "public/ship_lod0.gltf",
+    (gltf) => {
+      const shipGeometry = (gltf.scene.children[0] as THREE.Mesh).geometry;
+      const shipScale = 0.01;
+      shipGeometry.scale(shipScale, shipScale, shipScale);
+      // shipGeometry.rotateX(Utils.rad(90));
+      const shipMaterial = new THREE.MeshNormalMaterial();
+      const ships = new THREE.InstancedMesh(
+        shipGeometry,
+        shipMaterial,
+        shipCount,
+      );
+      ships.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+
+      const noiseGenerator = new NoisePointGenerator(renderer);
+      let dummyShipTransform = new THREE.Object3D();
+
+      const genShips = () => {
+        if (ships) planet.remove(ships);
+        const waterPoints = noiseGenerator.generatePoints(
+          waterLevel(),
+          planetAmplitude(),
+          shipCount,
+        );
+
+        for (let i = 0; i < waterPoints.length; i++) {
+          const x = waterPoints[i].x;
+          const y = waterPoints[i].y;
+          const z = waterPoints[i].z;
+          dummyShipTransform.position.set(x, y, z);
+
+          // Create quaternion
+          const normal = new THREE.Vector3(x, y, z).normalize();
+          const up = new THREE.Vector3(0, 1, 0);
+
+          // Create rotation matrix from orthogonal vectors
+          const right = new THREE.Vector3()
+            .crossVectors(up, normal)
+            .normalize();
+          const adjustedUp = new THREE.Vector3()
+            .crossVectors(normal, right)
+            .normalize();
+
+          const rotMatrix = new THREE.Matrix4().makeBasis(
+            right,
+            adjustedUp,
+            normal,
+          );
+
+          // Set quaternion from rotation matrix
+          dummyShipTransform.quaternion.setFromRotationMatrix(rotMatrix);
+          dummyShipTransform.rotateX(Utils.rad(90));
+
+          dummyShipTransform.updateMatrix();
+          ships.setMatrixAt(i, dummyShipTransform.matrix);
+        }
+        planet.add(ships);
+      };
+      genShips();
+      waterLevelElement.oninput = genShips;
+
+      //#region Ships
+      // let ships: any;
+      // // In your buildScene function:
+      //
+
+      // const genShips = () => {
+      //   if (ships) planet.remove(ships);
+
+      //   // Use the GPU to generate points
+      //   const waterPoints = noiseGenerator.generatePoints(
+      //     waterLevel(),
+      //     planetAmplitude(),
+      //     100000,
+      //   );
+      //   console.log({ waterPoints });
+
+      //   // Convert to buffer geometry
+      //   const shipPositions = new Float32Array(waterPoints.length * 3);
+      //   for (let i = 0; i < waterPoints.length; i++) {
+      //     shipPositions[i * 3] = waterPoints[i].x;
+      //     shipPositions[i * 3 + 1] = waterPoints[i].y;
+      //     shipPositions[i * 3 + 2] = waterPoints[i].z;
+      //   }
+
+      //   var shipsGeometry = new THREE.BufferGeometry();
+      //   shipsGeometry.setAttribute(
+      //     "position",
+      //     new THREE.BufferAttribute(shipPositions, 3),
+      //   );
+      //   var shipsMaterial = new THREE.PointsMaterial({
+      //     size: 10,
+      //     sizeAttenuation: false,
+      //     color: new THREE.Color(0xff0000),
+      //   });
+      //   ships = new THREE.Points(shipsGeometry, shipsMaterial);
+      //   ships.userData.ignore = true;
+      //   planet.add(ships);
+      // };
+      // genShips();
+      //
+      //#endregion
+    },
+    // called while loading is progressing
+    function (xhr) {
+      console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+    },
+    // called when loading has errors
+    function (error) {
+      console.log("An error happened");
+    },
+  );
 
   const poss = [];
   for (let i = 0; i < 10_000; i++) {
@@ -139,48 +260,6 @@ function buildScene() {
   s2.userData.ignore = true;
   scene.add(s);
   scene.add(s2);
-
-  //#region Ships
-  let ships: any;
-  // In your buildScene function:
-  const noiseGenerator = new NoisePointGenerator(renderer);
-
-  const genShips = () => {
-    if (ships) planet.remove(ships);
-
-    // Use the GPU to generate points
-    const waterPoints = noiseGenerator.generatePoints(
-      waterLevel(),
-      planetAmplitude(),
-      100000,
-    );
-    console.log({ waterPoints });
-
-    // Convert to buffer geometry
-    const shipPositions = new Float32Array(waterPoints.length * 3);
-    for (let i = 0; i < waterPoints.length; i++) {
-      shipPositions[i * 3] = waterPoints[i].x;
-      shipPositions[i * 3 + 1] = waterPoints[i].y;
-      shipPositions[i * 3 + 2] = waterPoints[i].z;
-    }
-
-    var shipsGeometry = new THREE.BufferGeometry();
-    shipsGeometry.setAttribute(
-      "position",
-      new THREE.BufferAttribute(shipPositions, 3),
-    );
-    var shipsMaterial = new THREE.PointsMaterial({
-      size: 10,
-      sizeAttenuation: false,
-      color: new THREE.Color(0xff0000),
-    });
-    ships = new THREE.Points(shipsGeometry, shipsMaterial);
-    ships.userData.ignore = true;
-    planet.add(ships);
-  };
-  genShips();
-  waterLevelElement.oninput = genShips;
-  //#endregion
 
   let lastTime: number;
   let selectedPosition: THREE.Vector3;
@@ -281,6 +360,7 @@ function buildScene() {
     // }
 
     renderer.render(scene, camera);
+    stats.update();
     lastTime = time;
   }
   renderer.setAnimationLoop(render);
