@@ -270,7 +270,7 @@ function buildScene() {
   camera.add(lookTarget);
 
   function render(time: number) {
-    console.log(time);
+    time *= 0.00000001;
 
     material.uniforms.time.value = time;
     material.uniforms.waterLevel.value = waterLevel();
@@ -293,7 +293,7 @@ function buildScene() {
 
     if (scrollPos <= 0) {
       const objects = pickHelper
-        .pick(pickPosition, scene, camera, time)
+        .pick(pickPosition, scene, camera)
         .filter((o) => o.object.userData.ignore !== true);
       const p = objects?.[0]?.point || new THREE.Vector3();
       s.position.set(p.x, p.y, p.z);
