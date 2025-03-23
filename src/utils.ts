@@ -1,5 +1,9 @@
 import * as THREE from "three";
 
+export function lerp(a: number, b: number, t: number): number {
+  return (1 - t) * a + t * b;
+}
+
 export function rad(degrees: number): number {
   return (degrees * Math.PI) / 180;
 }

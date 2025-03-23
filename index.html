@@ -8,6 +8,29 @@
     </head>
     <body>
         <div id="app">
+            <label>
+                Planet amplitude
+                <input
+                    type="range"
+                    id="planetAmplitude"
+                    name="volume"
+                    min="0"
+                    max="100"
+                />
+            </label>
+
+            <label
+                >Water level
+                <input
+                    type="range"
+                    id="waterLevel"
+                    name="volume"
+                    value="65"
+                    min="0"
+                    max="100"
+                />
+            </label>
+
             <canvas></canvas>
         </div>
         <script type="module" src="/src/main.ts"></script>
