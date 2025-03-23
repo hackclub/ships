@@ -251,6 +251,7 @@ export const vertexShader = `
 export const fragmentShader = `
   uniform float waterLevel;
   uniform float time;
+  uniform float scrollPos;
   varying vec3 vPosition;
   varying vec3 vNormal;
   varying float vNoise;
@@ -272,7 +273,7 @@ ${water}
       // Map from [-1,1] to [0,1]
       float r = vNoise;//0.5 + 0.5 * noise;
 
-      vec3 col = r > waterLevel ? vec3(10./255., 236./255., 11./255.) : water(uv); //vec3(11./255., 151./255., 235./255.);
+      vec3 col = r > waterLevel ? vec3(10./255., 236./255., 11./255.) : mix(vec3(11./255., 151./255., 235./255.), water(uv), scrollPos);
 
       gl_FragColor = vec4(col, 1.0);
   }

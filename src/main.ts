@@ -2,6 +2,7 @@ import "./style.css";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import Stats from "three/addons/libs/stats.module.js";
+import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import * as Utils from "./utils";
 import { fragmentShader, vertexShader, NoisePointGenerator } from "./gpu";
 
@@ -23,6 +24,7 @@ function buildScene() {
   document.body.appendChild(stats.dom);
 
   const shipCount = 10_000;
+  let ships: THREE.InstancedMesh;
 
   const canvas = document.querySelector("#app > canvas") as HTMLCanvasElement;
   const planetAmplitudeElement = document.getElementById(
@@ -58,11 +60,13 @@ function buildScene() {
       resolution: { value: new THREE.Vector2() },
       waterLevel: { value: 0.5 },
       planetAmplitude: { value: 0.5 },
+      scrollPos: { value: scrollPos },
     },
     vertexShader,
     fragmentShader,
   });
   const sphere = new THREE.Mesh(geometry, material);
+  sphere.userData.isPlanet = true;
 
   const planet = new THREE.Group();
   planet.add(sphere);
@@ -80,11 +84,7 @@ function buildScene() {
       shipGeometry.scale(shipScale, shipScale, shipScale);
       // shipGeometry.rotateX(Utils.rad(90));
       const shipMaterial = new THREE.MeshNormalMaterial();
-      const ships = new THREE.InstancedMesh(
-        shipGeometry,
-        shipMaterial,
-        shipCount,
-      );
+      ships = new THREE.InstancedMesh(shipGeometry, shipMaterial, shipCount);
       ships.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
       const noiseGenerator = new NoisePointGenerator(renderer);
@@ -241,7 +241,8 @@ function buildScene() {
 
   const pickHelper = new Utils.PickHelper();
 
-  const sa = new THREE.PlaneGeometry(0.2, 0.2);
+  // const sa = new THREE.PlaneGeometry(0.05, 0.05);
+  const sa = new THREE.PlaneGeometry(0.1, 0.1);
   const sm = new THREE.MeshBasicMaterial({
     color: 0x0000ff,
     opacity: 0.5,
@@ -261,10 +262,27 @@ function buildScene() {
   scene.add(s);
   scene.add(s2);
 
+  const lineMat = new MeshLineMaterial({
+    useMap: false,
+    color: new THREE.Color(0xff0000),
+    opacity: 1,
+    resolution: new THREE.Vector2(window.innerWidth, window.innerHeight), // Required by MeshLineMaterial
+    sizeAttenuation: false,
+    lineWidth: 10,
+  });
+  const line = new MeshLine();
+  const lineGeo = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0, 0, 0), // Start with same points to hide line initially
+  ]);
+  line.setGeometry(lineGeo);
+  const lineMesh = new THREE.Mesh(line.geometry, lineMat);
+  lineMesh.frustumCulled = false; // Prevents the line from disappearing when out of view
+  scene.add(lineMesh);
+
   let lastTime: number;
   let selectedPosition: THREE.Vector3;
   function render(time: number) {
-    console.log("t", 1 / (time - lastTime));
     // time *= 0.00000001;
 
     renderer.setClearColor(
@@ -276,16 +294,52 @@ function buildScene() {
     material.uniforms.time.value = time;
     material.uniforms.waterLevel.value = waterLevel();
     material.uniforms.planetAmplitude.value = planetAmplitude();
+    material.uniforms.scrollPos.value = scrollPos;
 
-    planet.rotation.y += scrollPos === 0 ? 0.005 : 0;
+    // planet.rotation.y += scrollPos === 0 ? 0.005 : 0;
 
     if (scrollPos <= 0) {
-      const objects = pickHelper
-        .pick(pickPosition, scene, camera)
-        .filter((o) => o.object.userData.ignore !== true);
-      const p = objects?.[0]?.point || new THREE.Vector3();
-      s.position.set(p.x, p.y, p.z);
-      s2.position.set(p.x, p.y, p.z);
+      const objects = pickHelper.pick(pickPosition, scene, camera);
+
+      console.log({ objects });
+      const object = objects.find((o) => o.object.userData.isPlanet);
+      const p = object?.point || new THREE.Vector3();
+      s.position.copy(p);
+      s2.position.copy(p);
+
+      if (ships) {
+        const nearestShip = findNearestShip(
+          planet.clone().worldToLocal(p.clone()),
+          ships,
+          shipCount,
+        );
+        console.log({ nearestShip });
+        if (nearestShip.position && nearestShip.distance < 0.1) {
+          s.material.color = new THREE.Color(0xff0000);
+
+          s.position.copy(planet.localToWorld(nearestShip.position.clone()));
+          s2.position.copy(planet.localToWorld(nearestShip.position.clone()));
+
+          // Ship position is already in planet space, so use directly
+          lineGeo.setFromPoints([
+            new THREE.Vector3(0, 0, 1.5),
+            planet.clone().localToWorld(nearestShip.position.clone()),
+          ]);
+
+          // 2. Update the MeshLine with the new geometry
+          line.setGeometry(lineGeo);
+
+          // 3. Make sure the mesh has the updated geometry
+          lineMesh.geometry = line.geometry;
+
+          // Make the line visible
+          lineMesh.visible = true;
+        } else {
+          s.material.color = new THREE.Color(0x0000ff);
+          // Hide the line when not needed
+          lineMesh.visible = false;
+        }
+      }
 
       // Create quaternion
       const normal = p.clone().normalize();
@@ -331,9 +385,7 @@ function buildScene() {
       s2.quaternion.setFromRotationMatrix(rotMatrix2);
 
       s2.position.add(
-        up2
-          .multiplyScalar(planetAmplitude() / 5)
-          .add(normal2.multiplyScalar(0.2)),
+        up2.multiplyScalar(0.015).add(normal2.multiplyScalar(0.1)),
       );
 
       selectedPosition = p;
@@ -364,4 +416,45 @@ function buildScene() {
     lastTime = time;
   }
   renderer.setAnimationLoop(render);
+}
+
+function findNearestShip(
+  pickedPosition: THREE.Vector3,
+  ships: any,
+  shipCount: number,
+) {
+  let minDistance = Infinity;
+  let nearestShipIndex = -1;
+  const shipPosition = new THREE.Vector3();
+  const dummyMatrix = new THREE.Matrix4();
+
+  // Loop through all ship instances
+  for (let i = 0; i < shipCount; i++) {
+    // Get the position of this ship instance from its matrix
+    ships.getMatrixAt(i, dummyMatrix);
+    shipPosition.setFromMatrixPosition(dummyMatrix);
+
+    // Calculate distance to picked position
+    const distance = pickedPosition.distanceTo(shipPosition);
+
+    // Update if this is the closest ship so far
+    if (distance < minDistance) {
+      minDistance = distance;
+      nearestShipIndex = i;
+    }
+  }
+
+  return {
+    index: nearestShipIndex,
+    distance: minDistance,
+    position:
+      nearestShipIndex >= 0
+        ? (() => {
+            const pos = new THREE.Vector3();
+            ships.getMatrixAt(nearestShipIndex, dummyMatrix);
+            pos.setFromMatrixPosition(dummyMatrix);
+            return pos;
+          })()
+        : null,
+  };
 }
