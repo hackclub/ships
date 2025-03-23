@@ -11,6 +11,10 @@ window.addEventListener("wheel", (e) => {
   console.log(scrollPos);
 });
 
+let clicked = false;
+window.addEventListener("mousedown", () => (clicked = true));
+window.addEventListener("mouseup", () => (clicked = false));
+
 function buildScene() {
   const canvas = document.querySelector("#app > canvas")!;
 
@@ -18,7 +22,7 @@ function buildScene() {
   const camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
-    0.1,
+    0.001,
     1000,
   );
 
@@ -92,78 +96,117 @@ function buildScene() {
 
   const pickHelper = new Utils.PickHelper();
 
-  const sa = new THREE.SphereGeometry(0.05);
-  const sm = new THREE.MeshNormalMaterial();
+  const sa = new THREE.PlaneGeometry(0.2, 0.2);
+  const sm = new THREE.MeshBasicMaterial({
+    color: 0x0000ff,
+    opacity: 0.5,
+    transparent: true,
+  });
   const s = new THREE.Mesh(sa, sm);
+  const s2 = new THREE.Mesh(
+    sa,
+    new THREE.MeshBasicMaterial({
+      color: 0x00ff00,
+      opacity: 0.5,
+      transparent: true,
+    }),
+  );
   s.userData.ignore = true;
+  s2.userData.ignore = true;
   scene.add(s);
+  scene.add(s2);
 
   let selectedPosition;
-  let quaternion = new THREE.Quaternion();
+
+  const lookTarget = new THREE.Object3D();
+  camera.add(lookTarget);
 
   function render(time: number) {
     time *= 0.001;
 
-    planet.rotation.y += 0.001;
+    // planet.rotation.y += 0.001;
 
     if (selectedPosition) {
-      const cp = new THREE.Vector3(0, 0, 2).lerp(selectedPosition, scrollPos);
+      const cp = new THREE.Vector3(0, 0, 2).lerp(s2.position, scrollPos);
       camera.position.copy(cp);
+
+      lookTarget.lookAt(selectedPosition);
+
+      camera.quaternion.slerpQuaternions(
+        new THREE.Quaternion(),
+        s2.quaternion,
+        scrollPos,
+      );
     }
 
-    const objects = pickHelper
-      .pick(pickPosition, scene, camera, time)
-      .filter((o) => o.object.userData.ignore !== true);
-    const p = objects?.[0]?.point || new THREE.Vector3();
-    s.position.set(p.x, p.y, p.z);
+    if (scrollPos <= 0) {
+      const objects = pickHelper
+        .pick(pickPosition, scene, camera, time)
+        .filter((o) => o.object.userData.ignore !== true);
+      const p = objects?.[0]?.point || new THREE.Vector3();
+      s.position.set(p.x, p.y, p.z);
+      s2.position.set(p.x, p.y, p.z);
 
-    if (scrollPos <= 0.2 && p.x !== 0) {
+      // Create quaternion
+      const normal = p.clone().normalize();
+      const up = new THREE.Vector3(0, 1, 0);
+
+      // Create rotation matrix from orthogonal vectors
+      const right = new THREE.Vector3().crossVectors(up, normal).normalize();
+      const adjustedUp = new THREE.Vector3()
+        .crossVectors(normal, right)
+        .normalize();
+
+      const rotMatrix = new THREE.Matrix4().makeBasis(
+        right,
+        adjustedUp,
+        normal,
+      );
+
+      // Set quaternion from rotation matrix
+      s.quaternion.setFromRotationMatrix(rotMatrix);
+
+      // Then, a q that is perp to the tangent and the angle bisecting s and camera.pos
+      const toCamera = new THREE.Vector3()
+        .subVectors(camera.position, p)
+        .normalize();
+
+      // Project toCamera onto the tangent plane of the surface
+      const projectedToCamera = new THREE.Vector3()
+        .copy(toCamera)
+        .sub(normal.clone().multiplyScalar(toCamera.dot(normal)))
+        .normalize();
+
+      // This will be s2's normal (pointing toward camera but in tangent plane)
+      const normal2 = projectedToCamera;
+
+      // s2's up direction is the normal of s (perpendicular to s's surface)
+      const up2 = normal.clone();
+
+      // Complete the basis with right2
+      const right2 = new THREE.Vector3().crossVectors(up2, normal2).normalize();
+
+      // Construct the rotation matrix and set the quaternion
+      const rotMatrix2 = new THREE.Matrix4().makeBasis(right2, up2, normal2);
+      s2.quaternion.setFromRotationMatrix(rotMatrix2);
+
+      s2.position.add(
+        up2.multiplyScalar(0.05).add(normal2.multiplyScalar(0.2)),
+      );
+
       selectedPosition = p;
-
-      // Calculate angle tangent to planet at point p
-      // Step 1: Draw line between point and planet origin
-      const upDir = planet.position.clone().sub(p).normalize();
-      console.log(p.normalize());
-      // camera.rotation.setFromVector3(
-      //   new THREE.Vector3(0, 0, 0).lerp(upDir, scrollPos),
-      // );
     }
+
+    // if (scrollPos <= 0 && clicked) {
+    //   // Calculate angle tangent to planet at point p
+    //   // Step 1: Draw line between point and planet origin
+    //   // console.log(p.normalize());
+    //   // camera.rotation.setFromVector3(
+    //   //   new THREE.Vector3(0, 0, 0).lerp(upDir, scrollPos),
+    //   // );
+    // }
 
     renderer.render(scene, camera);
   }
   renderer.setAnimationLoop(render);
-}
-
-function alignCameraWithPlanetSurface(camera, planet) {
-  // Get direction from planet center to camera (this becomes our "up" vector)
-  const upDirection = camera.position.clone().sub(planet.position).normalize();
-
-  // Set camera's up vector to point away from planet center
-  camera.up.copy(upDirection);
-
-  // Find a tangent direction (perpendicular to up vector)
-  const worldUp = new THREE.Vector3(0, 1, 0);
-  let tangentDirection;
-
-  // Avoid parallel vectors issue
-  if (Math.abs(upDirection.dot(worldUp)) > 0.9) {
-    tangentDirection = new THREE.Vector3()
-      .crossVectors(upDirection, new THREE.Vector3(1, 0, 0))
-      .normalize();
-  } else {
-    tangentDirection = new THREE.Vector3()
-      .crossVectors(upDirection, worldUp)
-      .normalize();
-  }
-
-  // Calculate forward direction (perpendicular to both up and tangent)
-  const forwardDirection = new THREE.Vector3()
-    .crossVectors(tangentDirection, upDirection)
-    .normalize();
-
-  // Create target point slightly ahead of camera
-  const targetPoint = camera.position.clone().add(forwardDirection);
-
-  // Orient the camera to look at this point
-  camera.lookAt(targetPoint);
 }
