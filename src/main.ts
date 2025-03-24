@@ -154,6 +154,7 @@ async function buildScene() {
           // Set quaternion from rotation matrix
           dummyShipTransform.quaternion.setFromRotationMatrix(rotMatrix);
           dummyShipTransform.rotateX(Utils.rad(90));
+          dummyShipTransform.rotateY(Math.random() * 2 * Math.PI);
 
           dummyShipTransform.updateMatrix();
           ships.setMatrixAt(i, dummyShipTransform.matrix);
