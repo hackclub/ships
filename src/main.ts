@@ -27,9 +27,9 @@ window.addEventListener("wheel", (e) => {
 // window.addEventListener("mouseup", () => (clicked = false));
 
 async function buildScene() {
-  const shipsData = await fetch("http://localhost:8080/ships").then((d) =>
-    d.json(),
-  );
+  const shipsData = await fetch(
+    "https://ab23-73-119-115-185.ngrok-free.app/ships",
+  ).then((d) => d.json());
   console.log({ shipsData });
 
   const stats = new Stats();
