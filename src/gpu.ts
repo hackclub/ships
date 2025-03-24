@@ -274,9 +274,9 @@ ${water}
 
       vec3 basicWaterCol = vec3(11./255., 151./255.,  235./255.) + (fbm(p * 1.1) - 0.5);
       vec3 col = r <= waterLevel ? mix(basicWaterCol, water(uv), scrollPos) :
-                 r <=0.67 ? vec3(10./255., 236./255., 11./255.) :
-                 r <=0.72 ? vec3(105./255., 52./255., 34./255.) :
-                 r <= 0.76 ? vec3(135./255., 135./255., 135./255.) :
+                 r <=0.67 ? vec3(10./255., 236./255., 11./255.) + (fbm(p * 7.) - 0.5) :
+                 r <=0.72 ? vec3(105./255., 52./255., 34./255.)  + (fbm(p * 2.) - 0.5) :
+                 r <= 0.76 ? vec3(135./255., 135./255., 135./255.)  + (fbm(p * 4.) - 0.5):
                  vec3(1., 1., 1.);
 
       gl_FragColor = vec4(col, 1.0);
@@ -295,25 +295,16 @@ export const vertexIdentityShader = `
 export const fragmentAtmosphereShader = `
   varying vec3 vPosition;
   uniform vec3 uCameraPos;
+  uniform float scrollPos;
 
   void main() {
-      // Calculate the view direction
-      vec3 viewDir = normalize(uCameraPos - vPosition);
+      gl_FragColor = vec4(mix(0.325, 1., scrollPos), mix(0.541, 1., scrollPos), mix(0.776, 1., scrollPos), 1.);
 
-      // Calculate the normal (assuming you have a normal vector available)
-      // If you don't have a normal, you'll need to calculate or pass it from the vertex shader
-      vec3 normal = normalize(cross(dFdx(vPosition), dFdy(vPosition)));
-
-      // Calculate the dot product of the view direction and the normal
-      float fresnelTerm = dot(viewDir, normal);
-
-      // Bias and scale the Fresnel term (adjust these values to your liking)
-      float bias = 0.1;
-      float scale = 0.9;
-      fresnelTerm = bias + scale * pow(1.0 - fresnelTerm, 5.0);
-
-      // Output the final color
-      gl_FragColor = vec4(fresnelTerm, fresnelTerm, fresnelTerm, 1.0);
+      float fadeThreshold = mix(0.00000001, .2, scrollPos);
+      float alphaFallOff = mix(2., 1.6, scrollPos);
+      if (vPosition.z > fadeThreshold) {
+        gl_FragColor.a = 1.0 + (fadeThreshold - vPosition.z ) * alphaFallOff;
+      }
   }
   `;
 

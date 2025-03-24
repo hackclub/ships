@@ -13,6 +13,7 @@ body {
         align-items: flex-end;
         flex-direction: column;
         gap: 0.5em;
+        z-index: 2;
 
         label {
             display: flex;

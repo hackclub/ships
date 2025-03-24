@@ -92,14 +92,14 @@ async function buildScene() {
     transparent: true,
     uniforms: {
       resolution: { value: new THREE.Vector2() },
-      // scrollPos: { value: scrollPos },
+      scrollPos: { value: scrollPos },
       uCameraPos: { value: camera.position },
     },
     vertexShader: vertexIdentityShader,
     fragmentShader: fragmentAtmosphereShader,
   });
   const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-  planet.add(atmosphere);
+  scene.add(atmosphere);
 
   scene.add(planet);
 
@@ -289,8 +289,8 @@ async function buildScene() {
   );
   s.userData.ignore = true;
   s2.userData.ignore = true;
-  scene.add(s);
-  scene.add(s2);
+  // scene.add(s);
+  // scene.add(s2);
 
   const lineMat = new MeshLineMaterial({
     useMap: false,
@@ -308,17 +308,18 @@ async function buildScene() {
   line.setGeometry(lineGeo);
   const lineMesh = new THREE.Mesh(line.geometry, lineMat);
   lineMesh.frustumCulled = false; // Prevents the line from disappearing when out of view
-  scene.add(lineMesh);
+  // scene.add(lineMesh);
 
   let lastTime: number;
   let selectedPosition: THREE.Vector3;
   function render(time: number) {
     // time *= 0.00000001;
 
-    renderer.setClearColor(
-      Utils.interpolateOklab(0x000022, 0x87ceeb, scrollPos),
-      1,
-    );
+    renderer.setClearColor(0x000022);
+    // renderer.setClearColor(
+    //   Utils.interpolateOklab(0x000022, 0x87ceeb, scrollPos),
+    //   1,
+    // );
     dot.material.opacity = Utils.lerp(0.5, 0, scrollPos);
 
     material.uniforms.time.value = time;
@@ -326,6 +327,7 @@ async function buildScene() {
     material.uniforms.planetAmplitude.value = planetAmplitude();
     material.uniforms.scrollPos.value = scrollPos;
     atmosphereMaterial.uniforms.uCameraPos.value = camera.position;
+    atmosphereMaterial.uniforms.scrollPos.value = scrollPos;
 
     planet.rotation.y += scrollPos === 0 ? 0.001 : 0;
 
@@ -343,7 +345,7 @@ async function buildScene() {
           ships,
           shipCount,
         );
-        if (nearestShip.position && nearestShip.distance < 0.1) {
+        if (nearestShip.position) {
           const si = shipsData[nearestShip.index];
           console.log(si);
 
