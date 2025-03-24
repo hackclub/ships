@@ -287,26 +287,69 @@ ${water}
 
 export const vertexIdentityShader = `
   varying vec3 vPosition;
-  uniform vec3 uCameraPos;
+  varying vec3 vNormals;
 
   void main() {
-    vPosition = position;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      // Transform position to world space
+      vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
+
+      // Transform normals to world space with proper normal matrix
+      vNormals = normalize(normalMatrix * normal);
+
+      // Standard position transformation
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
   `;
 export const fragmentAtmosphereShader = `
   varying vec3 vPosition;
+  varying vec3 vNormals;
   uniform vec3 uCameraPos;
   uniform float scrollPos;
 
   void main() {
-      gl_FragColor = vec4(mix(0.325, 1., scrollPos), mix(0.541, 1., scrollPos), mix(0.776, 1., scrollPos), 1.);
+    vec3 baseColor = vec3(mix(0.325, 0.761, scrollPos), mix(0.541, 0.863, scrollPos), mix(0.776, 0.922, scrollPos));
+    // vec3 baseColor = vec3(0.325, 0.541, 0.776);
 
-      float fadeThreshold = mix(0.00000001, .2, scrollPos);
-      float alphaFallOff = mix(2., 1.6, scrollPos);
-      if (vPosition.z > fadeThreshold) {
-        gl_FragColor.a = 1.0 + (fadeThreshold - vPosition.z ) * alphaFallOff;
+    // gl_FragColor = vec4(baseColor, 1.);
+
+    // float fadeThreshold = mix(0.00000001, .2, scrollPos);
+    // float alphaFallOff = mix(2., 1.6, scrollPos);
+    // if (vPosition.z > fadeThreshold) {
+    //   gl_FragColor.a = 1.0 + (fadeThreshold - vPosition.z ) * alphaFallOff;
+    // }
+
+    vec3 viewDir = normalize(uCameraPos - vPosition);
+    vec3 normal = normalize(vNormals);
+    // float d = pow(dot(normal, viewDir), 2.);
+    // float d = pow(1. - max(dot(normal, viewDir), 0.), 5.);
+
+    // vec3 c = vec3(1., 0., 0.); //normal * 0.5 + 0.5;
+    // gl_FragColor = vec4(c, d);
+
+
+
+    vec3 toCenter = normalize(-vPosition); // Direction from surface to planet center
+
+      // Calculate atmosphere based on angle between view dir and ray from center through point
+      float viewAngle = 1. - dot(viewDir, toCenter) * 3.5;
+
+      // Remap for consistent atmosphere (stronger at limb/horizon, weaker at center)
+      float atmosphere = 1.0 - (viewAngle * 0.5 + 0.5);
+      atmosphere = pow(atmosphere, 3.5); // Adjust power to control falloff
+
+      float distToCamera = length(uCameraPos - vPosition);
+
+      // Apply distance-based cutoff (adjust these values to fit your scale)
+      float planetRadius = length(vPosition); // Assuming sphere is at origin
+      float minDistance = planetRadius * 0.17; // Adjust this factor as needed
+      float fadeRange = planetRadius * 0.3;   // Distance over which to fade
+
+      // Fade out atmosphere when too close to surface
+      if (distToCamera < minDistance + fadeRange) {
+        atmosphere *= max(0.0, (distToCamera - minDistance) / fadeRange);
       }
+
+      gl_FragColor = vec4(baseColor, atmosphere * 15.0);
   }
   `;
 

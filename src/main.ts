@@ -59,7 +59,7 @@ async function buildScene() {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: true,
-    // antialias: true,
+    antialias: true,
   });
   renderer.setClearColor(0xffffff, 0);
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -94,6 +94,7 @@ async function buildScene() {
       resolution: { value: new THREE.Vector2() },
       scrollPos: { value: scrollPos },
       uCameraPos: { value: camera.position },
+      uCameraRot: { value: camera.rotation },
     },
     vertexShader: vertexIdentityShader,
     fragmentShader: fragmentAtmosphereShader,
@@ -321,19 +322,11 @@ async function buildScene() {
   function render(time: number) {
     // time *= 0.00000001;
 
-    renderer.setClearColor(0x000022);
-    // renderer.setClearColor(
-    //   Utils.interpolateOklab(0x000022, 0x87ceeb, scrollPos),
-    //   1,
-    // );
-    dot.material.opacity = Utils.lerp(0.5, 0, scrollPos);
-
-    material.uniforms.time.value = time;
-    material.uniforms.waterLevel.value = waterLevel();
-    material.uniforms.planetAmplitude.value = planetAmplitude();
-    material.uniforms.scrollPos.value = scrollPos;
-    atmosphereMaterial.uniforms.uCameraPos.value = camera.position;
-    atmosphereMaterial.uniforms.scrollPos.value = scrollPos;
+    // renderer.setClearColor(0x000022);
+    renderer.setClearColor(
+      Utils.interpolateOklab(0x000022, 0x3d6db7, scrollPos),
+      1,
+    );
 
     planet.rotation.y += scrollPos === 0 ? 0.001 : 0;
 
@@ -462,6 +455,15 @@ async function buildScene() {
     //   //   new THREE.Vector3(0, 0, 0).lerp(upDir, scrollPos),
     //   // );
     // }
+
+    dot.material.opacity = Utils.lerp(0.5, 0, scrollPos);
+
+    material.uniforms.time.value = time;
+    material.uniforms.waterLevel.value = waterLevel();
+    material.uniforms.planetAmplitude.value = planetAmplitude();
+    material.uniforms.scrollPos.value = scrollPos;
+    atmosphereMaterial.uniforms.uCameraPos.value.copy(camera.position);
+    atmosphereMaterial.uniforms.scrollPos.value = scrollPos;
 
     renderer.render(scene, camera);
     stats.update();
