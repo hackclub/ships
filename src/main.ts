@@ -112,9 +112,15 @@ async function buildScene() {
       const shipScale = 0.01;
       shipGeometry.scale(shipScale, shipScale, shipScale);
       // shipGeometry.rotateX(Utils.rad(90));
-      const shipMaterial = new THREE.MeshNormalMaterial();
+      const shipMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
       ships = new THREE.InstancedMesh(shipGeometry, shipMaterial, shipCount);
       ships.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+
+      const sun = new THREE.DirectionalLight(0xffffcc, 2);
+      sun.position.set(10, -5, 10);
+      sun.lookAt(planet.position);
+      scene.add(sun);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
       const noiseGenerator = new NoisePointGenerator(renderer);
       let dummyShipTransform = new THREE.Object3D();

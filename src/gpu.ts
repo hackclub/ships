@@ -273,7 +273,9 @@ ${water}
       float r = vNoise;//0.5 + 0.5 * noise;
 
       vec3 basicWaterCol = vec3(11./255., 151./255.,  235./255.) + (fbm(p * 1.1) - 0.5);
-      vec3 col = r <= waterLevel ? mix(basicWaterCol, water(uv), scrollPos) :
+      vec3 waterCol = mix(basicWaterCol, water(uv), scrollPos);
+      vec3 col = r <= waterLevel ? waterCol :
+                 r <=waterLevel + 0.001 ? waterCol * 1.5 :
                  r <=0.67 ? vec3(10./255., 236./255., 11./255.) + (fbm(p * 7.) - 0.5) :
                  r <=0.72 ? vec3(105./255., 52./255., 34./255.)  + (fbm(p * 2.) - 0.5) :
                  r <= 0.76 ? vec3(135./255., 135./255., 135./255.)  + (fbm(p * 4.) - 0.5):
