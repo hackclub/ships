@@ -107,7 +107,7 @@ async function buildScene() {
   const gltfLoader = new GLTFLoader();
 
   gltfLoader.load(
-    "public/ship.gltf",
+    "/ship.gltf",
     (gltf) => {
       const shipGeometry = (gltf.scene.children[0] as THREE.Mesh).geometry;
       const shipScale = 0.01;
