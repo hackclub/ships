@@ -5,7 +5,13 @@ import Stats from "three/addons/libs/stats.module.js";
 //@ts-expect-error It wants three.meshline types
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import * as Utils from "./utils";
-import { fragmentShader, vertexShader, NoisePointGenerator } from "./gpu";
+import {
+  fragmentShader,
+  vertexShader,
+  NoisePointGenerator,
+  vertexIdentityShader,
+  fragmentAtmosphereShader,
+} from "./gpu";
 
 document.addEventListener("DOMContentLoaded", buildScene);
 
@@ -78,6 +84,23 @@ async function buildScene() {
   planet.add(sphere);
   planet.rotation.z = Utils.rad(23.5);
   camera.position.z = 2;
+
+  const atmosphereGeometry = geometry.clone();
+  atmosphereGeometry.scale(1.04, 1.04, 1.04);
+  const atmosphereMaterial = new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    transparent: true,
+    uniforms: {
+      resolution: { value: new THREE.Vector2() },
+      // scrollPos: { value: scrollPos },
+      uCameraPos: { value: camera.position },
+    },
+    vertexShader: vertexIdentityShader,
+    fragmentShader: fragmentAtmosphereShader,
+  });
+  const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+  planet.add(atmosphere);
+
   scene.add(planet);
 
   const gltfLoader = new GLTFLoader();
@@ -301,6 +324,7 @@ async function buildScene() {
     material.uniforms.waterLevel.value = waterLevel();
     material.uniforms.planetAmplitude.value = planetAmplitude();
     material.uniforms.scrollPos.value = scrollPos;
+    atmosphereMaterial.uniforms.uCameraPos.value = camera.position;
 
     planet.rotation.y += scrollPos === 0 ? 0.001 : 0;
 

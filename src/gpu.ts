@@ -259,7 +259,7 @@ ${perlin}
 ${water}
 
   void main() {
-      // vec3 p = normalize(vPosition);
+      vec3 p = normalize(vPosition);
 
       // Use fBm for more detail
       // float noise = fbm(p);
@@ -272,8 +272,8 @@ ${water}
       // Map from [-1,1] to [0,1]
       float r = vNoise;//0.5 + 0.5 * noise;
 
-      // vec3 col = r > 0.75 ? r > 0.65 ? vec3(105./255., 52./255., 34./255.) : vec3(1., 1., 1.) : r > waterLevel ? vec3(10./255., 236./255., 11./255.) : mix(vec3(11./255., 151./255., 235./255.), water(uv), scrollPos);
-      vec3 col = r <= waterLevel ? mix(vec3(11./255., 151./255., 235./255.), water(uv), scrollPos) :
+      vec3 basicWaterCol = vec3(11./255., 151./255.,  235./255.) + (fbm(p * 1.1) - 0.5);
+      vec3 col = r <= waterLevel ? mix(basicWaterCol, water(uv), scrollPos) :
                  r <=0.67 ? vec3(10./255., 236./255., 11./255.) :
                  r <=0.72 ? vec3(105./255., 52./255., 34./255.) :
                  r <= 0.76 ? vec3(135./255., 135./255., 135./255.) :
@@ -282,6 +282,40 @@ ${water}
       gl_FragColor = vec4(col, 1.0);
   }
 `;
+
+export const vertexIdentityShader = `
+  varying vec3 vPosition;
+  uniform vec3 uCameraPos;
+
+  void main() {
+    vPosition = position;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+  `;
+export const fragmentAtmosphereShader = `
+  varying vec3 vPosition;
+  uniform vec3 uCameraPos;
+
+  void main() {
+      // Calculate the view direction
+      vec3 viewDir = normalize(uCameraPos - vPosition);
+
+      // Calculate the normal (assuming you have a normal vector available)
+      // If you don't have a normal, you'll need to calculate or pass it from the vertex shader
+      vec3 normal = normalize(cross(dFdx(vPosition), dFdy(vPosition)));
+
+      // Calculate the dot product of the view direction and the normal
+      float fresnelTerm = dot(viewDir, normal);
+
+      // Bias and scale the Fresnel term (adjust these values to your liking)
+      float bias = 0.1;
+      float scale = 0.9;
+      fresnelTerm = bias + scale * pow(1.0 - fresnelTerm, 5.0);
+
+      // Output the final color
+      gl_FragColor = vec4(fresnelTerm, fresnelTerm, fresnelTerm, 1.0);
+  }
+  `;
 
 // GPU-based point generation system. I generated this with AI.
 export class NoisePointGenerator {
