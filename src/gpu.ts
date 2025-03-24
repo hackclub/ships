@@ -474,7 +474,6 @@ export class NoisePointGenerator {
     this.renderer.setRenderTarget(currentRenderTarget);
 
     // Generate points from the texture data
-    const points: THREE.Vector3[] = [];
     const waterPoints: THREE.Vector3[] = [];
 
     // Generate random points and check texture to see if they're in water

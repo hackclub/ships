@@ -219,7 +219,7 @@ async function buildScene() {
     },
     // called when loading has errors
     function (error) {
-      console.log("An error happened");
+      console.log("An error happened", error);
     },
   );
 
@@ -317,7 +317,6 @@ async function buildScene() {
   lineMesh.frustumCulled = false; // Prevents the line from disappearing when out of view
   // scene.add(lineMesh);
 
-  let lastTime: number;
   let selectedPosition: THREE.Vector3;
   function render(time: number) {
     // time *= 0.00000001;
@@ -467,7 +466,6 @@ async function buildScene() {
 
     renderer.render(scene, camera);
     stats.update();
-    lastTime = time;
   }
   renderer.setAnimationLoop(render);
 }
