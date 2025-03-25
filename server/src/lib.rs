@@ -1,6 +1,7 @@
+use serde::Serialize;
 use time::{macros::format_description, Date};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Ship {
     pub id: String,
     pub heard_through: Option<String>,
@@ -25,7 +26,7 @@ impl Ship {
 
         let res = reqwest::Client::new()
             .get(url)
-            .bearer_auth(std::env::var("AIRTABLE_TOKEN").expect("an airtable PAT"))
+            .bearer_auth(std::env::var("AIRTABLE_PAT").expect("an airtable PAT"))
             .send()
             .await
             .ok()?

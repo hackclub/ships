@@ -1,48 +1,38 @@
 use actix_cors::Cors;
 use actix_web::{get, middleware, web, App, HttpServer, Responder, Result};
-use deadpool_postgres::{Config, GenericClient, ManagerConfig, RecyclingMethod};
+use deadpool_postgres::{Config, GenericClient, ManagerConfig, Pool, RecyclingMethod};
 use serde::{Deserialize, Serialize};
 use server::Ship;
 use std::error::Error;
 
-#[derive(Debug, Deserialize, Serialize)]
-struct SanitisedShip {
-    ysws: String,
-    code_url: String,
-    demo_url: String,
-    // screenshot_url: String,
-    // description: String,
-    hours: Option<f32>,
-    country: String,
-}
-
-fn get_ships() -> Result<Vec<SanitisedShip>, Box<dyn Error>> {
-    let f = std::fs::File::open("./ships.csv")?;
-    let mut rdr = csv::Reader::from_reader(f);
-
-    Ok(rdr
-        .records()
-        .map(|record| {
-            let r = record.expect("a record");
-
-            // print!("{}", r.get(1).unwrap().to_owned());
-
-            return SanitisedShip {
-                ysws: r.get(1).unwrap().to_owned(),
-                code_url: r.get(11).unwrap().to_owned(),
-                demo_url: r.get(10).unwrap().to_owned(),
-                // screenshot_url: r.get(12).unwrap().to_owned(),
-                // description: r.get(13).unwrap().to_owned(),
-                hours: r.get(23).unwrap().to_owned().parse::<f32>().ok(),
-                country: r.get(43).unwrap().to_owned(),
-            };
-        })
-        .collect())
-}
-
 #[get("/")]
-async fn index() -> Result<impl Responder> {
-    Ok(web::Json(get_ships()?))
+async fn index(data: web::Data<AppState>) -> Result<impl Responder, Box<dyn Error>> {
+    let ships: Vec<Ship> = data
+        .db_pool
+        .get()
+        .await?
+        .query("SELECT * FROM ship ORDER BY approved_at asc;", &[])
+        .await?
+        .iter()
+        .map(|row| Ship {
+            id: row.get("id"),
+            heard_through: row.get("heard_through"),
+            github_username: row.get("github_username"),
+            country: row.get("country"),
+            hours: row.get("hours"),
+            screenshot_url: row.get("screenshot_url"),
+            code_url: row.get("code_url"),
+            demo_url: row.get("demo_url"),
+            description: row.get("description"),
+            approved_at: row.get("approved_at"),
+        })
+        .collect();
+
+    Ok(web::Json(ships))
+}
+
+struct AppState {
+    db_pool: Pool,
 }
 
 #[actix_web::main]
@@ -136,12 +126,17 @@ approved_at DATE
         }
     });
 
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         let cors = Cors::permissive();
+
+        let app_state = AppState {
+            db_pool: db_pool.clone(),
+        };
 
         App::new()
             .wrap(middleware::Compress::default())
             .wrap(cors)
+            .app_data(web::Data::new(app_state))
             .service(index)
     })
     .bind(("127.0.0.1", 8080))?
