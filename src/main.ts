@@ -63,6 +63,7 @@ async function buildScene() {
   });
   renderer.setClearColor(0xffffff, 0);
   renderer.setSize(window.innerWidth, window.innerHeight);
+  window.renderer = renderer;
 
   const geometry = new THREE.IcosahedronGeometry(1, 50);
   // const material = new THREE.MeshBasicMaterial({ color:  });
@@ -115,7 +116,7 @@ async function buildScene() {
       // shipGeometry.rotateX(Utils.rad(90));
       const shipMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
       ships = new THREE.InstancedMesh(shipGeometry, shipMaterial, shipCount);
-      ships.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      ships.instanceMatrix.setUsage(THREE.StaticDrawUsage); // https://www.khronos.org/opengl/wiki/Buffer_Object#Buffer_Object_Usage
 
       const sun = new THREE.DirectionalLight(0xffffcc, 2);
       sun.position.set(10, -5, 10);
@@ -139,6 +140,10 @@ async function buildScene() {
           const y = waterPoints[i].y;
           const z = waterPoints[i].z;
           dummyShipTransform.position.set(x, y, z);
+
+          if (Math.abs(x) < 0.001 || i == 0 || i == waterPoints.length - 1) {
+            console.log("YAYAYYA", x, y, z);
+          }
 
           // Create quaternion
           const normal = new THREE.Vector3(x, y, z).normalize();
@@ -170,48 +175,6 @@ async function buildScene() {
       };
       genShips();
       waterLevelElement.oninput = genShips;
-
-      //#region Ships
-      // let ships: any;
-      // // In your buildScene function:
-      //
-
-      // const genShips = () => {
-      //   if (ships) planet.remove(ships);
-
-      //   // Use the GPU to generate points
-      //   const waterPoints = noiseGenerator.generatePoints(
-      //     waterLevel(),
-      //     planetAmplitude(),
-      //     100000,
-      //   );
-      //   console.log({ waterPoints });
-
-      //   // Convert to buffer geometry
-      //   const shipPositions = new Float32Array(waterPoints.length * 3);
-      //   for (let i = 0; i < waterPoints.length; i++) {
-      //     shipPositions[i * 3] = waterPoints[i].x;
-      //     shipPositions[i * 3 + 1] = waterPoints[i].y;
-      //     shipPositions[i * 3 + 2] = waterPoints[i].z;
-      //   }
-
-      //   var shipsGeometry = new THREE.BufferGeometry();
-      //   shipsGeometry.setAttribute(
-      //     "position",
-      //     new THREE.BufferAttribute(shipPositions, 3),
-      //   );
-      //   var shipsMaterial = new THREE.PointsMaterial({
-      //     size: 10,
-      //     sizeAttenuation: false,
-      //     color: new THREE.Color(0xff0000),
-      //   });
-      //   ships = new THREE.Points(shipsGeometry, shipsMaterial);
-      //   ships.userData.ignore = true;
-      //   planet.add(ships);
-      // };
-      // genShips();
-      //
-      //#endregion
     },
     // called while loading is progressing
     function (xhr) {
@@ -233,6 +196,7 @@ async function buildScene() {
   const posss = new Float32Array(poss);
   console.log("generated points");
 
+  //#region Stars
   var dotGeometry = new THREE.BufferGeometry();
   dotGeometry.setAttribute("position", new THREE.BufferAttribute(posss, 3));
   var dotMaterial = new THREE.PointsMaterial({
@@ -245,6 +209,7 @@ async function buildScene() {
   var dot = new THREE.Points(dotGeometry, dotMaterial);
   dot.userData.ignore = true;
   scene.add(dot);
+  //#endregion
 
   function getCanvasRelativePosition(event: MouseEvent) {
     const rect = canvas.getBoundingClientRect();
@@ -316,6 +281,10 @@ async function buildScene() {
   const lineMesh = new THREE.Mesh(line.geometry, lineMat);
   lineMesh.frustumCulled = false; // Prevents the line from disappearing when out of view
   // scene.add(lineMesh);
+
+  function easeInOutSine(x: number): number {
+    return -(Math.cos(Math.PI * x) - 1) / 2;
+  }
 
   let selectedPosition: THREE.Vector3;
   function render(time: number) {
