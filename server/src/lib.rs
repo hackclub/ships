@@ -4,7 +4,6 @@ use time::{macros::format_description, Date};
 #[derive(Debug, Serialize)]
 pub struct Ship {
     pub id: String,
-    pub ysws: Option<String>,
     pub heard_through: Option<String>,
     pub github_username: Option<String>,
     pub country: Option<String>,
@@ -14,6 +13,7 @@ pub struct Ship {
     pub demo_url: Option<String>,
     pub description: Option<String>,
     pub approved_at: Option<Date>,
+    pub ysws: Option<String>,
 }
 impl Ship {
     pub async fn fetch_unified_page(
@@ -55,7 +55,6 @@ impl Ship {
 
                     Ship {
                         id: Self::field(t.get("id")).expect("a record id"),
-                        ysws: Self::field(f.get("YSWS")),
                         heard_through: Self::field(f.get("How did you hear about this?")),
                         github_username: Self::field(f.get("GitHub Username")),
                         country: t
@@ -75,6 +74,10 @@ impl Ship {
                             .map(|a| a.as_str().map(|b| Date::parse(b, &format).ok()))
                             .flatten()
                             .flatten(),
+                        ysws: t
+                            .pointer("/fields/YSWS–Name/0")
+                            .and_then(|v| v.as_str())
+                            .map(|s| s.to_string()),
                     }
                 })
                 .collect::<Vec<Ship>>(),

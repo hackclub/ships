@@ -16,7 +16,6 @@ async fn index(data: web::Data<AppState>) -> Result<impl Responder, Box<dyn Erro
         .iter()
         .map(|row| Ship {
             id: row.get("id"),
-            ysws: row.get("ysws"),
             heard_through: row.get("heard_through"),
             github_username: row.get("github_username"),
             country: row.get("country"),
@@ -26,6 +25,7 @@ async fn index(data: web::Data<AppState>) -> Result<impl Responder, Box<dyn Erro
             demo_url: row.get("demo_url"),
             description: row.get("description"),
             approved_at: row.get("approved_at"),
+            ysws: row.get("ysws"),
         })
         .collect();
 
@@ -60,7 +60,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .batch_execute(
             "CREATE TABLE IF NOT EXISTS ship (
 id TEXT PRIMARY KEY,
-ysws TEXT,
 heard_through TEXT,
 github_username TEXT,
 country TEXT,
@@ -69,7 +68,8 @@ screenshot_url TEXT,
 code_url TEXT,
 demo_url TEXT,
 description TEXT,
-approved_at DATE
+approved_at DATE,
+ysws TEXT
 );",
         )
         .await
@@ -79,8 +79,8 @@ approved_at DATE
         .get()
         .await?
         .prepare_cached("
-            INSERT INTO ship (id, heard_through, github_username, country, hours, screenshot_url, code_url, demo_url, description, approved_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            INSERT INTO ship (id, heard_through, github_username, country, hours, screenshot_url, code_url, demo_url, description, approved_at, ysws)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             ON CONFLICT (id) DO UPDATE SET
                 heard_through = $2,
                 github_username = $3,
@@ -90,7 +90,8 @@ approved_at DATE
                 code_url = $7,
                 demo_url = $8,
                 description = $9,
-                approved_at = $10;")
+                approved_at = $10,
+                ysws = $11;")
         .await?;
     //#endregion
 
@@ -116,6 +117,7 @@ approved_at DATE
                                 &ship.demo_url,
                                 &ship.description,
                                 &ship.approved_at,
+                                &ship.ysws,
                             ],
                         )
                         .await
