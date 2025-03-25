@@ -141,7 +141,15 @@ ysws TEXT
             .app_data(web::Data::new(app_state))
             .service(index)
     })
-    .bind(("0.0.0.0", 8080))?
+    .bind((
+        "0.0.0.0",
+        std::env::var("DEPLOYMENT_PORT")
+            .map(|i| {
+                i.parse::<u16>()
+                    .expect("env var DEPLOYMENT_PORT should be an integer")
+            })
+            .unwrap_or(8080),
+    ))?
     .run()
     .await?;
 
