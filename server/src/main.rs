@@ -16,6 +16,7 @@ async fn index(data: web::Data<AppState>) -> Result<impl Responder, Box<dyn Erro
         .iter()
         .map(|row| Ship {
             id: row.get("id"),
+            ysws: row.get("ysws"),
             heard_through: row.get("heard_through"),
             github_username: row.get("github_username"),
             country: row.get("country"),
@@ -59,6 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .batch_execute(
             "CREATE TABLE IF NOT EXISTS ship (
 id TEXT PRIMARY KEY,
+ysws TEXT,
 heard_through TEXT,
 github_username TEXT,
 country TEXT,
