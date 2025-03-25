@@ -38,8 +38,6 @@ struct AppState {
 
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    env_logger::init();
-
     //#region DB setup
     let mut db_cfg = Config::new();
     db_cfg.url = Some(std::env::var("DB_URL").expect("a Postgres URL").to_string());
@@ -143,7 +141,7 @@ ysws TEXT
             .app_data(web::Data::new(app_state))
             .service(index)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 8080))?
     .run()
     .await?;
 
