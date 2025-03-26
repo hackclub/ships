@@ -34,4 +34,26 @@ body {
     text-align: center;
     width: 100%;
     color: white;
+    margin: 0;
+}
+
+#cover {
+    position: absolute;
+    inset: 0;
+    background: #000022;
+    display: flex;
+    color: white;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3em;
+}
+
+svg {
+    width: 20rem;
+    height: fit-content;
+
+    &#line {
+        width: 25rem;
+    }
 }

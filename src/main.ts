@@ -15,7 +15,13 @@ import {
 } from "./gpu";
 import localforage from "localforage";
 
-document.addEventListener("DOMContentLoaded", buildScene);
+const canvasSelector = "#app > canvas";
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (document.querySelector(canvasSelector)) {
+    buildScene();
+  }
+});
 
 let zoomingInToShipStartTime: DOMHighResTimeStamp | null = null;
 let scrollPos = 0;
@@ -31,6 +37,8 @@ window.addEventListener("mousedown", () => (clicked = true));
 window.addEventListener("mouseup", () => (clicked = false));
 
 async function buildScene() {
+  const canvas = document.querySelector(canvasSelector) as HTMLCanvasElement;
+
   let shipsData: any[];
   const shipsCache: string | null = await localforage.getItem("ships");
 
@@ -52,7 +60,6 @@ async function buildScene() {
   let ships: THREE.InstancedMesh;
   let detailedShip: THREE.Mesh;
 
-  const canvas = document.querySelector("#app > canvas") as HTMLCanvasElement;
   const planetAmplitude = () => 1.5;
   const waterLevel = () => 0.65;
 
