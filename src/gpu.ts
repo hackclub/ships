@@ -291,9 +291,11 @@ ${water}
 
 export const vertexIdentityShader = `
   varying vec3 vPosition;
+  varying vec3 foo;
   varying vec3 vNormals;
 
   void main() {
+    foo = position;
       // Transform position to world space
       vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
 
@@ -309,6 +311,10 @@ export const fragmentAtmosphereShader = `
   varying vec3 vNormals;
   uniform vec3 uCameraPos;
   uniform float scrollPos;
+
+  float easeInQuad(float x) {
+    return pow(x, 1.4);
+  }
 
   void main() {
     vec3 baseColor = vec3(mix(0.325, 0.761, scrollPos), mix(0.541, 0.863, scrollPos), mix(0.776, 0.922, scrollPos));
@@ -334,28 +340,43 @@ export const fragmentAtmosphereShader = `
 
     vec3 toCenter = normalize(-vPosition); // Direction from surface to planet center
 
-      // Calculate atmosphere based on angle between view dir and ray from center through point
-      float viewAngle = 1. - dot(viewDir, toCenter) * 3.5;
+    // Calculate atmosphere based on angle between view dir and ray from center through point
+    float viewAngle = 1. - dot(viewDir, toCenter) * 3.5;
 
-      // Remap for consistent atmosphere (stronger at limb/horizon, weaker at center)
-      float atmosphere = 1.0 - (viewAngle * 0.5 + 0.5);
-      atmosphere = pow(atmosphere, 3.5); // Adjust power to control falloff
+    // Remap for consistent atmosphere (stronger at limb/horizon, weaker at center)
+    float atmosphere = 1.0 - (viewAngle * 0.5 + 0.5);
+    atmosphere = pow(atmosphere, 3.5); // Adjust power to control falloff
 
-      float distToCamera = length(uCameraPos - vPosition);
+    float distToCamera = length(uCameraPos - vPosition);
 
-      // Apply distance-based cutoff (adjust these values to fit your scale)
-      float planetRadius = length(vPosition); // Assuming sphere is at origin
-      float minDistance = planetRadius * 0.17; // Adjust this factor as needed
-      float fadeRange = planetRadius * 0.3;   // Distance over which to fade
+    // Apply distance-based cutoff (adjust these values to fit your scale)
+    float planetRadius = length(vPosition); // Assuming sphere is at origin
+    float minDistance = planetRadius * 0.17; // Adjust this factor as needed
+    float fadeRange = planetRadius * 0.3;   // Distance over which to fade
 
-      // Fade out atmosphere when too close to surface
-      if (distToCamera < minDistance + fadeRange) {
-        atmosphere *= max(0.0, (distToCamera - minDistance) / fadeRange);
-      }
+    // Fade out atmosphere when too close to surface
+    if (distToCamera < minDistance + fadeRange) {
+      atmosphere *= max(0.0, (distToCamera - minDistance) / fadeRange);
+    }
 
-      gl_FragColor = vec4(baseColor, atmosphere * 15.0);
+    gl_FragColor = vec4(baseColor, easeInQuad(atmosphere * 15.0));
   }
-  `;
+`;
+
+export const fragmentDetailedShipShadowShader = `
+  varying vec3 vPosition;
+  varying vec3 vNormals;
+  uniform float scrollPos;
+
+  void main() {
+    vec3 modelSpacePos = vec3(inverse(modelMatrix) * vec4(vPosition, 1.0));
+
+    float d = sqrt(pow(modelSpacePos.x, 2.) + pow(modelSpacePos.y, 2.));
+    float a = mix(0., 0.5, (scrollPos  - .5) * 2.);
+
+    gl_FragColor = vec4(vec3(d, 0., 0.), a);
+  }
+`;
 
 // GPU-based point generation system. I generated this with AI.
 export class NoisePointGenerator {

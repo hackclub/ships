@@ -36,56 +36,56 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":6486,
+			"count":65365,
 			"max":[
-				1.2831122875213623,
-				1.997154951095581,
-				0.6436499953269958
+				1.2824574708938599,
+				1.99699068069458,
+				0.6448810696601868
 			],
 			"min":[
-				-1.212504506111145,
-				-5.647186844726093e-05,
-				-0.6450352668762207
+				-1.213760256767273,
+				-6.34251023257093e-07,
+				-0.6449622511863708
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":6486,
+			"count":65365,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5123,
-			"count":6750,
+			"count":67542,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":77832,
+			"byteLength":784380,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":77832,
-			"byteOffset":77832,
+			"byteLength":784380,
+			"byteOffset":784380,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":13500,
-			"byteOffset":155664,
+			"byteLength":135084,
+			"byteOffset":1568760,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":169164,
-			"uri":"ship_lodx.bin"
+			"byteLength":1703844,
+			"uri":"ship_lod_high.bin"
 		}
 	]
 }

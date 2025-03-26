@@ -11,6 +11,7 @@ import {
   NoisePointGenerator,
   vertexIdentityShader,
   fragmentAtmosphereShader,
+  fragmentDetailedShipShadowShader,
 } from "./gpu";
 import localforage from "localforage";
 
@@ -42,13 +43,14 @@ async function buildScene() {
     shipsData = JSON.parse(shipsCache);
   }
 
-  // shipsData.length = 20;
+  // shipsData.length = 5000;
 
   const stats = new Stats();
   document.body.appendChild(stats.dom);
 
   const shipCount = shipsData.length;
   let ships: THREE.InstancedMesh;
+  let detailedShip: THREE.Mesh;
 
   const canvas = document.querySelector("#app > canvas") as HTMLCanvasElement;
   const planetAmplitude = () => 1.5;
@@ -67,10 +69,11 @@ async function buildScene() {
     alpha: true,
     antialias: true,
   });
+  renderer.setPixelRatio(window.devicePixelRatio || 1);
   renderer.setClearColor(0xffffff, 0);
   renderer.setSize(window.innerWidth, window.innerHeight);
 
-  const geometry = new THREE.IcosahedronGeometry(1, 32);
+  const geometry = new THREE.IcosahedronGeometry(1, 50);
   // const material = new THREE.MeshBasicMaterial({ color:  });
   const material = new THREE.ShaderMaterial({
     // wireframe: true,
@@ -93,7 +96,7 @@ async function buildScene() {
   camera.position.z = 2;
 
   const atmosphereGeometry = geometry.clone();
-  atmosphereGeometry.scale(1.04, 1.04, 1.04);
+  atmosphereGeometry.scale(1.055, 1.055, 1.055);
   const atmosphereMaterial = new THREE.ShaderMaterial({
     side: THREE.BackSide,
     transparent: true,
@@ -116,8 +119,39 @@ async function buildScene() {
   let shipGeometry: THREE.BufferGeometry;
   const zoomedOutShipScale = 0.01;
 
+  const shipMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+  const detailedShipShadowMaterial = new THREE.ShaderMaterial({
+    transparent: true,
+    uniforms: {
+      scrollPos: { value: scrollPos },
+    },
+    vertexShader: vertexIdentityShader,
+    fragmentShader: fragmentDetailedShipShadowShader,
+  });
+
+  gltfLoader.load("/ship_lod_high.gltf", (gltf) => {
+    shipGeometry = (gltf.scene.children[0] as THREE.Mesh).geometry;
+    shipGeometry.scale(
+      zoomedOutShipScale,
+      zoomedOutShipScale,
+      zoomedOutShipScale,
+    );
+
+    const detailedShipShadowGeometry = new THREE.CircleGeometry(0.02);
+    const detailedShipShadow = new THREE.Mesh(
+      detailedShipShadowGeometry,
+      detailedShipShadowMaterial,
+    );
+    detailedShipShadow.rotateX(Utils.rad(-90));
+
+    detailedShip = new THREE.Mesh(shipGeometry, shipMaterial);
+    detailedShip.add(detailedShipShadow);
+
+    planet.add(detailedShip);
+  });
+
   gltfLoader.load(
-    "/ship.gltf",
+    "/ship_lod0.gltf",
     (gltf) => {
       shipGeometry = (gltf.scene.children[0] as THREE.Mesh).geometry;
       shipGeometry.scale(
@@ -125,10 +159,23 @@ async function buildScene() {
         zoomedOutShipScale,
         zoomedOutShipScale,
       );
-      // shipGeometry.rotateX(Utils.rad(90));
-      const shipMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+
       ships = new THREE.InstancedMesh(shipGeometry, shipMaterial, shipCount);
       ships.instanceMatrix.setUsage(THREE.StaticDrawUsage); // https://www.khronos.org/opengl/wiki/Buffer_Object#Buffer_Object_Usage
+
+      // const sunLight = new THREE.DirectionalLight(0xffe499, 5);
+      // sunLight.castShadow = true;
+      // sunLight.shadow.camera.near = 0.1;
+      // sunLight.shadow.camera.far = 5;
+      // sunLight.shadow.camera.right = 2;
+      // sunLight.shadow.camera.left = -2;
+      // sunLight.shadow.camera.top = 1;
+      // sunLight.shadow.camera.bottom = -2;
+      // sunLight.shadow.mapSize.width = 2048;
+      // sunLight.shadow.mapSize.height = 2048;
+      // sunLight.shadow.bias = -0.001;
+      // sunLight.position.set(0.5, 3, 0.5);
+      // scene.add(sunLight);
 
       const sun = new THREE.DirectionalLight(0xffffcc, 2);
       sun.position.set(10, -5, 10);
@@ -311,28 +358,16 @@ async function buildScene() {
   }
 
   let selectedPosition: THREE.Vector3;
+  let selectedShipIndex: number | null;
   function render(time: number) {
     renderer.setClearColor(
       Utils.interpolateOklab(0x000022, 0x3d6db7, scrollPos),
       1,
     );
 
+    atmosphere.scale.setScalar(Utils.lerp(1, 0.99, scrollPos));
+
     planet.rotation.y += scrollPos === 0 ? 0.001 : 0;
-
-    if (shipGeometry) {
-      const dummy = new THREE.Object3D();
-      const lerpedShipGeometryScale = Utils.lerp(1, 0.2, scrollPos);
-
-      for (let i = 0; i < ships.count; i++) {
-        ships.getMatrixAt(i, dummy.matrix);
-        dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
-        dummy.scale.setScalar(lerpedShipGeometryScale);
-        dummy.updateMatrix();
-        ships.setMatrixAt(i, dummy.matrix);
-      }
-
-      ships.instanceMatrix.needsUpdate = true;
-    }
 
     if (scrollPos <= 0) {
       const objects = pickHelper.pick(pickPosition, scene, camera);
@@ -348,10 +383,12 @@ async function buildScene() {
           ships,
           shipCount,
         );
-        if (nearestShip.position) {
+        if (nearestShip) {
           if (clicked) {
             zoomingInToShipStartTime = performance.now();
           }
+
+          selectedShipIndex = nearestShip.index;
 
           const si = shipsData[nearestShip.index];
 
@@ -364,6 +401,8 @@ async function buildScene() {
 <span style="font-size: 1.2em; font-weight: bold;">${si.ysws}</span>
 <br />
 <span>${url}</span>
+<br />
+<img src=${si.screenshot_url} />
 <br />
 <span>${si.country ? `From ${si.country}.` : ""}${si.hours ? ` Took ${si.hours} hours.` : ""}<span>
 `;
@@ -390,6 +429,8 @@ async function buildScene() {
           s.material.color = new THREE.Color(0x0000ff);
           // Hide the line when not needed
           lineMesh.visible = false;
+
+          selectedShipIndex = null;
         }
       }
 
@@ -454,8 +495,38 @@ async function buildScene() {
       );
     }
 
-    const zoomEaseTime = 1_500;
+    if (shipGeometry && detailedShip) {
+      const dummy = new THREE.Object3D();
+      const lerpedShipGeometryScale = Utils.lerp(1, 0.2, scrollPos);
 
+      for (let i = 0; i < ships.count; i++) {
+        ships.getMatrixAt(i, dummy.matrix);
+        dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
+
+        /* Oh my god the > 0.5 might be my most genius move ever.
+         * If you omit it you can see all the models change LOD upon hover.
+         * Only changing it as you're zooming in means that it's probably
+         * out of view while the camera is zooming into it.
+         * Even if it's visible for the duration of the zoom, you can't discern
+         * the LOD switch because of the camera movement.
+         * IT'S SO SMOOTH WTF 😭
+         */
+        dummy.scale.setScalar(lerpedShipGeometryScale);
+        if (selectedShipIndex === i && scrollPos > 0.5) {
+          detailedShip.position.copy(dummy.position);
+          detailedShip.rotation.copy(dummy.rotation);
+          detailedShip.scale.copy(dummy.scale);
+
+          dummy.scale.setScalar(0.000000001);
+        }
+        dummy.updateMatrix();
+        ships.setMatrixAt(i, dummy.matrix);
+      }
+
+      ships.instanceMatrix.needsUpdate = true;
+    }
+
+    const zoomEaseTime = 1_500;
     if (zoomingInToShipStartTime) {
       if (performance.now() - zoomingInToShipStartTime > zoomEaseTime) {
         zoomingInToShipStartTime = null;
@@ -469,10 +540,10 @@ async function buildScene() {
     // if (scrollPos <= 0 && clicked) {
     //   // Calculate angle tangent to planet at point p
     //   // Step 1: Draw line between point and planet origin
-    //   // console.log(p.normalize());
-    //   // camera.rotation.setFromVector3(
-    //   //   new THREE.Vector3(0, 0, 0).lerp(upDir, scrollPos),
-    //   // );
+    //   console.log(p.normalize());
+    //   camera.rotation.setFromVector3(
+    //     new THREE.Vector3(0, 0, 0).lerp(upDir, scrollPos),
+    //   );
     // }
 
     dot.material.opacity = Utils.lerp(0.5, 0, scrollPos);
@@ -480,9 +551,11 @@ async function buildScene() {
     material.uniforms.time.value = time;
     material.uniforms.waterLevel.value = waterLevel();
     material.uniforms.planetAmplitude.value = planetAmplitude();
-    material.uniforms.scrollPos.value = scrollPos;
     atmosphereMaterial.uniforms.uCameraPos.value.copy(camera.position);
-    atmosphereMaterial.uniforms.scrollPos.value = scrollPos;
+    material.uniforms.scrollPos.value =
+      atmosphereMaterial.uniforms.scrollPos.value =
+      detailedShipShadowMaterial.uniforms.scrollPos.value =
+        scrollPos;
 
     renderer.render(scene, camera);
     stats.update();
