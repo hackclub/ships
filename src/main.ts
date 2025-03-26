@@ -51,14 +51,8 @@ async function buildScene() {
   let ships: THREE.InstancedMesh;
 
   const canvas = document.querySelector("#app > canvas") as HTMLCanvasElement;
-  const planetAmplitudeElement = document.getElementById(
-    "planetAmplitude",
-  ) as HTMLInputElement;
-  const waterLevelElement = document.getElementById(
-    "waterLevel",
-  ) as HTMLInputElement;
-  const planetAmplitude = () => Number(planetAmplitudeElement.value) / 100;
-  const waterLevel = () => Number(waterLevelElement.value) / 100;
+  const planetAmplitude = () => 1.5;
+  const waterLevel = () => 0.65;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
@@ -76,7 +70,7 @@ async function buildScene() {
   renderer.setClearColor(0xffffff, 0);
   renderer.setSize(window.innerWidth, window.innerHeight);
 
-  const geometry = new THREE.IcosahedronGeometry(1, 50);
+  const geometry = new THREE.IcosahedronGeometry(1, 32);
   // const material = new THREE.MeshBasicMaterial({ color:  });
   const material = new THREE.ShaderMaterial({
     // wireframe: true,
@@ -319,9 +313,6 @@ async function buildScene() {
 
   let selectedPosition: THREE.Vector3;
   function render(time: number) {
-    // time *= 0.00000001;
-
-    // renderer.setClearColor(0x000022);
     renderer.setClearColor(
       Utils.interpolateOklab(0x000022, 0x3d6db7, scrollPos),
       1,
