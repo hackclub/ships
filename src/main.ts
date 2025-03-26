@@ -12,20 +12,36 @@ import {
   vertexIdentityShader,
   fragmentAtmosphereShader,
 } from "./gpu";
+import localforage from "localforage";
 
 document.addEventListener("DOMContentLoaded", buildScene);
 
+let zoomingInToShipStartTime: DOMHighResTimeStamp | null = null;
 let scrollPos = 0;
 window.addEventListener("wheel", (e) => {
+  if (zoomingInToShipStartTime) return;
+
   scrollPos += e.deltaY / 1_000;
   scrollPos = Math.max(0, Math.min(1, scrollPos));
-  console.log(scrollPos);
 });
 
+let clicked = false;
+window.addEventListener("mousedown", () => (clicked = true));
+window.addEventListener("mouseup", () => (clicked = false));
+
 async function buildScene() {
-  const shipsData = await fetch("https://api.ships.hackclub.com/").then((d) =>
-    d.json(),
-  );
+  let shipsData: any[];
+  const shipsCache: string | null = await localforage.getItem("ships");
+
+  if (!shipsCache) {
+    shipsData = await fetch("https://api.ships.hackclub.com/").then((d) =>
+      d.json(),
+    );
+    await localforage.setItem("ships", JSON.stringify(shipsData));
+  } else {
+    shipsData = JSON.parse(shipsCache);
+  }
+
   console.log({ shipsData });
 
   const stats = new Stats();
