@@ -199,7 +199,6 @@ async function buildScene() {
         planet.add(ships);
       };
       genShips();
-      waterLevelElement.oninput = genShips;
     },
     // called while loading is progressing
     function (xhr) {
