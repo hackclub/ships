@@ -121,7 +121,7 @@ const water = `
   // Procedural texture generation for the water
   vec3 water(vec2 uv)
   {
-      uv *= vec2(200); // Scale factor - adjust this for pattern density on sphere
+      uv *= vec2(500); // Scale factor - adjust this for pattern density on sphere
 
 #if DISTORT_WATER
       // Texture distortion
@@ -480,8 +480,7 @@ export class NoisePointGenerator {
     // Generate points from the texture data
     const waterPoints: THREE.Vector3[] = [];
 
-    // Generate random points and check texture to see if they're in water
-    for (let i = 0; i < numPoints; i++) {
+    while (waterPoints.length < numPoints) {
       // Generate random spherical coordinates
       const phi = this.random.next() * Math.PI * 2;
       const theta = Math.acos(2 * this.random.next() - 1);
@@ -507,7 +506,7 @@ export class NoisePointGenerator {
         waterPoints.push(point);
       }
 
-      if (waterPoints.length >= numPoints / 10) break; // Limit to roughly 10% of points
+      // if (waterPoints.length >= numPoints / 10) break; // Limit to roughly 10% of points
     }
 
     return waterPoints;

@@ -42,7 +42,7 @@ async function buildScene() {
     shipsData = JSON.parse(shipsCache);
   }
 
-  console.log({ shipsData });
+  // shipsData.length = 20;
 
   const stats = new Stats();
   document.body.appendChild(stats.dom);
@@ -79,6 +79,7 @@ async function buildScene() {
   const geometry = new THREE.IcosahedronGeometry(1, 50);
   // const material = new THREE.MeshBasicMaterial({ color:  });
   const material = new THREE.ShaderMaterial({
+    // wireframe: true,
     uniforms: {
       time: { value: 1.0 },
       resolution: { value: new THREE.Vector2() },
@@ -118,12 +119,18 @@ async function buildScene() {
 
   const gltfLoader = new GLTFLoader();
 
+  let shipGeometry: THREE.BufferGeometry;
+  const zoomedOutShipScale = 0.01;
+
   gltfLoader.load(
     "/ship.gltf",
     (gltf) => {
-      const shipGeometry = (gltf.scene.children[0] as THREE.Mesh).geometry;
-      const shipScale = 0.01;
-      shipGeometry.scale(shipScale, shipScale, shipScale);
+      shipGeometry = (gltf.scene.children[0] as THREE.Mesh).geometry;
+      shipGeometry.scale(
+        zoomedOutShipScale,
+        zoomedOutShipScale,
+        zoomedOutShipScale,
+      );
       // shipGeometry.rotateX(Utils.rad(90));
       const shipMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
       ships = new THREE.InstancedMesh(shipGeometry, shipMaterial, shipCount);
@@ -146,15 +153,23 @@ async function buildScene() {
           shipCount,
         );
 
+        function hashStringToColor(str: string): number {
+          let hash = 0x811c9dc5; // FNV offset basis
+
+          for (let i = 0; i < str.length; i++) {
+            hash ^= str.charCodeAt(i);
+            hash = Math.imul(hash, 0x01000193); // FNV prime
+          }
+
+          // Ensure positive and in range 0x000000-0xffffff
+          return Math.abs(hash) % 0x1000000;
+        }
+
         for (let i = 0; i < waterPoints.length; i++) {
           const x = waterPoints[i].x;
           const y = waterPoints[i].y;
           const z = waterPoints[i].z;
           dummyShipTransform.position.set(x, y, z);
-
-          if (Math.abs(x) < 0.001 || i == 0 || i == waterPoints.length - 1) {
-            console.log("YAYAYYA", x, y, z);
-          }
 
           // Create quaternion
           const normal = new THREE.Vector3(x, y, z).normalize();
@@ -181,6 +196,11 @@ async function buildScene() {
 
           dummyShipTransform.updateMatrix();
           ships.setMatrixAt(i, dummyShipTransform.matrix);
+
+          ships.setColorAt(
+            i,
+            new THREE.Color(hashStringToColor(shipsData[i].ysws)),
+          );
         }
         planet.add(ships);
       };
@@ -309,6 +329,21 @@ async function buildScene() {
 
     planet.rotation.y += scrollPos === 0 ? 0.001 : 0;
 
+    if (shipGeometry) {
+      const dummy = new THREE.Object3D();
+      const lerpedShipGeometryScale = Utils.lerp(1, 0.2, scrollPos);
+
+      for (let i = 0; i < ships.count; i++) {
+        ships.getMatrixAt(i, dummy.matrix);
+        dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
+        dummy.scale.setScalar(lerpedShipGeometryScale);
+        dummy.updateMatrix();
+        ships.setMatrixAt(i, dummy.matrix);
+      }
+
+      ships.instanceMatrix.needsUpdate = true;
+    }
+
     if (scrollPos <= 0) {
       const objects = pickHelper.pick(pickPosition, scene, camera);
 
@@ -329,7 +364,6 @@ async function buildScene() {
           }
 
           const si = shipsData[nearestShip.index];
-          console.log(si);
 
           let url = si.code_url;
           try {
@@ -413,7 +447,7 @@ async function buildScene() {
       s2.quaternion.setFromRotationMatrix(rotMatrix2);
 
       s2.position.add(
-        up2.multiplyScalar(0.015).add(normal2.multiplyScalar(0.03)),
+        up2.multiplyScalar(0.0035).add(normal2.multiplyScalar(0.008)),
       );
 
       selectedPosition = p;
