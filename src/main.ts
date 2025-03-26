@@ -63,7 +63,6 @@ async function buildScene() {
   });
   renderer.setClearColor(0xffffff, 0);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  window.renderer = renderer;
 
   const geometry = new THREE.IcosahedronGeometry(1, 50);
   // const material = new THREE.MeshBasicMaterial({ color:  });
