@@ -128,6 +128,13 @@ ysws TEXT
         }
     });
 
+    let port = std::env::var("DEPLOYMENT_PORT")
+        .map(|i| {
+            i.parse::<u16>()
+                .expect("env var DEPLOYMENT_PORT should be an integer")
+        })
+        .unwrap_or(8080);
+
     HttpServer::new(move || {
         let cors = Cors::permissive();
 
@@ -141,15 +148,7 @@ ysws TEXT
             .app_data(web::Data::new(app_state))
             .service(index)
     })
-    .bind((
-        "0.0.0.0",
-        std::env::var("DEPLOYMENT_PORT")
-            .map(|i| {
-                i.parse::<u16>()
-                    .expect("env var DEPLOYMENT_PORT should be an integer")
-            })
-            .unwrap_or(8080),
-    ))?
+    .bind(("0.0.0.0", port))?
     .run()
     .await?;
 
