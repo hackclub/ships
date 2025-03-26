@@ -258,6 +258,10 @@ export const fragmentShader = `
 ${perlin}
 ${water}
 
+  float easeInExpo(float x) {
+    return x == 0. ? 0. : pow(2., 10. * x - 10.);
+  }
+
   void main() {
       vec3 p = normalize(vPosition);
 
@@ -273,7 +277,7 @@ ${water}
       float r = vNoise;//0.5 + 0.5 * noise;
 
       vec3 basicWaterCol = vec3(11./255., 151./255.,  235./255.) + (fbm(p * 1.1) - 0.5);
-      vec3 waterCol = mix(basicWaterCol, water(uv), scrollPos);
+      vec3 waterCol = mix(basicWaterCol, water(uv), easeInExpo(scrollPos));
       vec3 col = r <= waterLevel ? waterCol :
                  r <=waterLevel + 0.001 ? waterCol * 1.5 :
                  r <=0.67 ? vec3(10./255., 236./255., 11./255.) + (fbm(p * 7.) - 0.5) :
