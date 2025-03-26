@@ -1,35 +1,56 @@
 use actix_cors::Cors;
 use actix_web::{get, middleware, web, App, HttpServer, Responder, Result};
 use deadpool_postgres::{Config, GenericClient, ManagerConfig, Pool, RecyclingMethod};
-use serde::{Deserialize, Serialize};
+use serde_json::json;
 use server::Ship;
 use std::error::Error;
 
+// Cacheable ship info
 #[get("/")]
 async fn index(data: web::Data<AppState>) -> Result<impl Responder, Box<dyn Error>> {
-    let ships: Vec<Ship> = data
+    let ships: Vec<serde_json::Value> = data
         .db_pool
         .get()
         .await?
-        .query("SELECT * FROM ship ORDER BY approved_at asc;", &[])
+        .query("SELECT id, heard_through, github_username, country, hours, code_url, demo_url, description, approved_at, ysws FROM ship ORDER BY approved_at asc;", &[])
         .await?
         .iter()
-        .map(|row| Ship {
-            id: row.get("id"),
-            heard_through: row.get("heard_through"),
-            github_username: row.get("github_username"),
-            country: row.get("country"),
-            hours: row.get("hours"),
-            screenshot_url: row.get("screenshot_url"),
-            code_url: row.get("code_url"),
-            demo_url: row.get("demo_url"),
-            description: row.get("description"),
-            approved_at: row.get("approved_at"),
-            ysws: row.get("ysws"),
+        .map(|row| {
+            json!({
+                "id": row.get::<&str, &str>("id"),
+                "heard_through": row.get::<&str, Option<&str>>("heard_through"),
+                "github_username": row.get::<&str, Option<&str>>("github_username"),
+                "country": row.get::<&str, Option<&str>>("country"),
+                "hours": row.get::<&str, Option<f64>>("hours"),
+                "code_url": row.get::<&str, Option<&str>>("code_url"),
+                "demo_url": row.get::<&str, Option<&str>>("demo_url"),
+                "description": row.get::<&str, Option<&str>>("description"),
+                "approved_at": row.get::<&str, Option<time::Date>>("approved_at"),
+                "ysws": row.get::<&str, Option<&str>>("ysws")
+            })
         })
         .collect();
 
     Ok(web::Json(ships))
+}
+
+// Separate endpoint for screenshots because they expire
+#[get("/screenshots")]
+async fn screenshots(data: web::Data<AppState>) -> Result<impl Responder, Box<dyn Error>> {
+    let screenshot_urls: Vec<Option<String>> = data
+        .db_pool
+        .get()
+        .await?
+        .query(
+            "SELECT screenshot_url FROM ship ORDER BY approved_at asc;",
+            &[],
+        )
+        .await?
+        .iter()
+        .map(|row| row.get::<&str, Option<String>>("screenshot_url"))
+        .collect();
+
+    Ok(web::Json(screenshot_urls))
 }
 
 struct AppState {
@@ -147,6 +168,7 @@ ysws TEXT
             .wrap(cors)
             .app_data(web::Data::new(app_state))
             .service(index)
+            .service(screenshots)
     })
     .bind(("0.0.0.0", port))?
     .run()
