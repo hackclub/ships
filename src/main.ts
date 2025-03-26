@@ -22,10 +22,6 @@ window.addEventListener("wheel", (e) => {
   console.log(scrollPos);
 });
 
-// let clicked = false;
-// window.addEventListener("mousedown", () => (clicked = true));
-// window.addEventListener("mouseup", () => (clicked = false));
-
 async function buildScene() {
   const shipsData = await fetch("https://api.ships.hackclub.com/").then((d) =>
     d.json(),
