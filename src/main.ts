@@ -293,8 +293,8 @@ async function buildScene() {
   lineMesh.frustumCulled = false; // Prevents the line from disappearing when out of view
   // scene.add(lineMesh);
 
-  function easeInOutSine(x: number): number {
-    return -(Math.cos(Math.PI * x) - 1) / 2;
+  function easeInOutCubic(x: number): number {
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
   }
 
   let selectedPosition: THREE.Vector3;
@@ -324,6 +324,10 @@ async function buildScene() {
           shipCount,
         );
         if (nearestShip.position) {
+          if (clicked) {
+            zoomingInToShipStartTime = performance.now();
+          }
+
           const si = shipsData[nearestShip.index];
           console.log(si);
 
@@ -424,6 +428,18 @@ async function buildScene() {
         s2.quaternion,
         scrollPos,
       );
+    }
+
+    const zoomEaseTime = 1_500;
+
+    if (zoomingInToShipStartTime) {
+      if (performance.now() - zoomingInToShipStartTime > zoomEaseTime) {
+        zoomingInToShipStartTime = null;
+      } else {
+        scrollPos = easeInOutCubic(
+          (performance.now() - zoomingInToShipStartTime) / zoomEaseTime,
+        );
+      }
     }
 
     // if (scrollPos <= 0 && clicked) {
