@@ -383,7 +383,7 @@ async function buildScene() {
           ships,
           shipCount,
         );
-        if (nearestShip) {
+        if (nearestShip?.position) {
           if (clicked) {
             zoomingInToShipStartTime = performance.now();
           }
