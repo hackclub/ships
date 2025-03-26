@@ -153,17 +153,17 @@ async function buildScene() {
           shipCount,
         );
 
-        function hashStringToColor(str: string): number {
-          let hash = 0x811c9dc5; // FNV offset basis
+        // function hashStringToColor(str: string): number {
+        //   let hash = 0x811c9dc5; // FNV offset basis
 
-          for (let i = 0; i < str.length; i++) {
-            hash ^= str.charCodeAt(i);
-            hash = Math.imul(hash, 0x01000193); // FNV prime
-          }
+        //   for (let i = 0; i < str.length; i++) {
+        //     hash ^= str.charCodeAt(i);
+        //     hash = Math.imul(hash, 0x01000193); // FNV prime
+        //   }
 
-          // Ensure positive and in range 0x000000-0xffffff
-          return Math.abs(hash) % 0x1000000;
-        }
+        //   // Ensure positive and in range 0x000000-0xffffff
+        //   return Math.abs(hash) % 0x1000000;
+        // }
 
         for (let i = 0; i < waterPoints.length; i++) {
           const x = waterPoints[i].x;
@@ -197,10 +197,10 @@ async function buildScene() {
           dummyShipTransform.updateMatrix();
           ships.setMatrixAt(i, dummyShipTransform.matrix);
 
-          ships.setColorAt(
-            i,
-            new THREE.Color(hashStringToColor(shipsData[i].ysws)),
-          );
+          // ships.setColorAt(
+          //   i,
+          //   new THREE.Color(hashStringToColor(shipsData[i].ysws)),
+          // );
         }
         planet.add(ships);
       };
