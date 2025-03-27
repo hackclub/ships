@@ -1,5 +1,7 @@
 use actix_cors::Cors;
-use actix_web::{get, middleware, web, App, HttpServer, Responder, Result};
+use actix_web::{
+    get, http::StatusCode, middleware, web, App, HttpResponse, HttpServer, Responder, Result,
+};
 use deadpool_postgres::{Config, GenericClient, ManagerConfig, Pool, RecyclingMethod};
 use serde_json::json;
 use server::Ship;
@@ -7,7 +9,7 @@ use std::error::Error;
 
 // Cacheable ship info
 #[get("/")]
-async fn index(data: web::Data<AppState>) -> Result<impl Responder, Box<dyn Error>> {
+async fn index(data: web::Data<AppState>) -> Result<HttpResponse, Box<dyn Error>> {
     let ships: Vec<serde_json::Value> = data
         .db_pool
         .get()
@@ -31,7 +33,14 @@ async fn index(data: web::Data<AppState>) -> Result<impl Responder, Box<dyn Erro
         })
         .collect();
 
-    Ok(web::Json(ships))
+    let json = serde_json::to_string(&ships).unwrap();
+
+    let response = HttpResponse::Ok()
+        .content_type("application/json")
+        .append_header(("x-length", json.len().to_string())) // Content-Length doesn't set.
+        .body(json);
+
+    Ok(response)
 }
 
 // Separate endpoint for screenshots because they expire
