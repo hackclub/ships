@@ -170,6 +170,8 @@
                         stroke-linecap="round"
                     />
                 </svg>
+
+                <p id="loading-progress">Initialising DOM</p>
             </div>
 
             <script type="module">
@@ -180,16 +182,16 @@
                 const line = document.getElementById("line");
                 line.setAttribute("stroke-dasharray", "1800");
 
-                setInterval(() => {
-                    offset -= 10;
-                    line.style = `stroke-dashoffset: ${offset}px;`;
-                });
+                // setInterval(() => {
+                // //     offset -= 10;
+                // //     line.style = `stroke-dashoffset: ${offset}px;`;
+                // // });
 
                 anime({
                     targets: "#planet > path",
                     strokeDashoffset: [anime.setDashoffset, 0],
                     easing: "easeInOutSine",
-                    duration: (el, i) => (i === 9 ? 2500 : 500),
+                    duration: (el, i) => (i === 9 ? 500 : 500),
                     delay: (el, i) => {
                         console.log(i);
                         return (i === 9 ? 600 : 0) + i * 100;
@@ -210,7 +212,7 @@
             </script>
 
             <p id="details"></p>
-            <!-- <canvas></canvas> -->
+            <canvas></canvas>
         </div>
         <script type="module" src="/src/main.ts"></script>
     </body>

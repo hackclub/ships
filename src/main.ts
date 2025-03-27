@@ -14,8 +14,18 @@ import {
   fragmentDetailedShipShadowShader,
 } from "./gpu";
 import localforage from "localforage";
+import anime from "animejs/lib/anime.es.js";
 
 const canvasSelector = "#app > canvas";
+const loadingProgressDisplay = document.querySelector(
+  "#app > #cover > #loading-progress",
+) as HTMLParagraphElement;
+
+const loadingLine = document.getElementById("line")!;
+loadingLine.setAttribute("stroke-dasharray", "1800");
+loadingLine.style.strokeDashoffset = "1800px";
+
+let initialised = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   if (document.querySelector(canvasSelector)) {
@@ -36,22 +46,51 @@ let clicked = false;
 window.addEventListener("mousedown", () => (clicked = true));
 window.addEventListener("mouseup", () => (clicked = false));
 
+async function loadShips() {
+  loadingProgressDisplay.textContent = "Loading ships";
+
+  const cachedShips: string | null = await localforage.getItem("ships");
+  if (cachedShips) {
+    loadingLine.style.strokeDashoffset = "0px";
+    return JSON.parse(cachedShips);
+  }
+
+  const url = "http://localhost:8080/"; // "https://api.ships.hackclub.com/"
+  const response = await fetch(url);
+  if (!response?.body) return;
+
+  const contentLength = response.headers.get("x-length");
+  const total = parseInt(contentLength || "1");
+  const values: number[] = [];
+  const reader = response.body.getReader();
+  let loadedBytes = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    // It may not look like it but this is what peak performance looks like (no, really).
+    for (let i = 0; i < value.length; i++) {
+      values.push(value[i]);
+    }
+
+    loadedBytes += value.byteLength;
+    loadingLine.style.strokeDashoffset = `${(1 - loadedBytes / total) * 1800}px`;
+  }
+
+  const utf8decoder = new TextDecoder("utf-8");
+  const decodedText = utf8decoder.decode(new Uint8Array(values));
+
+  await localforage.setItem("ships", decodedText);
+
+  return JSON.parse(decodedText);
+}
+
 async function buildScene() {
   const canvas = document.querySelector(canvasSelector) as HTMLCanvasElement;
 
-  let shipsData: any[];
-  const shipsCache: string | null = await localforage.getItem("ships");
-
-  if (!shipsCache) {
-    shipsData = await fetch("https://api.ships.hackclub.com/").then((d) =>
-      d.json(),
-    );
-    await localforage.setItem("ships", JSON.stringify(shipsData));
-  } else {
-    shipsData = JSON.parse(shipsCache);
-  }
-
-  // shipsData.length = 5000;
+  const shipsData = await loadShips();
+  loadingProgressDisplay.textContent = "Worldbuilding";
 
   const stats = new Stats();
   document.body.appendChild(stats.dom);
@@ -565,6 +604,19 @@ async function buildScene() {
         scrollPos;
 
     renderer.render(scene, camera);
+
+    if (!initialised) {
+      initialised = true;
+      anime({
+        targets: "#app > #cover",
+        opacity: 0,
+        easing: "easeInOutSine",
+        duration: 1_000,
+        delay: 500,
+        direction: "forward",
+      });
+    }
+
     stats.update();
   }
   renderer.setAnimationLoop(render);
