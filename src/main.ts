@@ -55,7 +55,7 @@ async function loadShips() {
     return JSON.parse(cachedShips);
   }
 
-  const url = "http://localhost:8080/"; // "https://api.ships.hackclub.com/"
+  const url = "https://api.ships.hackclub.com/";
   const response = await fetch(url);
   if (!response?.body) return;
 
