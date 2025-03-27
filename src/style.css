@@ -47,6 +47,8 @@ body {
     align-items: center;
     justify-content: center;
     gap: 3em;
+
+    z-index: 1;
 }
 
 svg {
