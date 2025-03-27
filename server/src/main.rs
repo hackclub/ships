@@ -123,13 +123,48 @@ ysws TEXT
         .await?;
     //#endregion
 
+    async fn get_db_ship_count(
+        pool_item: &deadpool_postgres::Object,
+    ) -> Result<usize, Box<dyn Error>> {
+        let count =
+            pool_item.query("SELECT COUNT(*) FROM ship;", &[]).await?[0].get::<&str, i64>("count");
+
+        Ok(count as usize)
+    }
+
+    async fn update_github_description(ship_count: usize) -> Result<(), reqwest::Error> {
+        use num_format::{Locale, ToFormattedString};
+
+        let ship_count: String = ship_count.to_formatted_string(&Locale::en);
+
+        let gh_client = reqwest::Client::new();
+
+        println!(
+            "{:?}",
+            gh_client
+                .patch("https://api.github.com/repos/hackclub/ships")
+                .bearer_auth(std::env::var("GITHUB_PAT").expect("a GITHUB_PAT env var"))
+                .header("X-GitHub-Api-Version", "2022-11-28")
+                .header("User-Agent", "hackclub/ships-server")
+                .header("Accept", "application/vnd.github+json")
+                .json(&json!({ "description": format!("🚢 {ship_count} Ships, visualised") }))
+                .send()
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap()
+        );
+
+        Ok(())
+    }
+
     let pool_item = db_pool.get().await?;
     tokio::task::spawn(async move {
         let mut cursor = None::<String>;
 
         loop {
             if let Some((ships, new_cursor)) = Ship::fetch_unified_page(&cursor).await {
-                cursor = new_cursor;
                 for ship in ships.iter() {
                     pool_item
                         .query(
@@ -149,10 +184,22 @@ ysws TEXT
                             ],
                         )
                         .await
-                        .expect("the query to execute");
+                        .expect("the prepared insert statement to execute");
                 }
+
+                cursor = if ships.len() < 100 {
+                    let db_count = get_db_ship_count(&pool_item)
+                        .await
+                        .expect("the count statement to execute");
+                    println!("Done. Go back to the start");
+                    let _ = update_github_description(db_count).await;
+                    None
+                } else {
+                    new_cursor
+                };
+
+                println!("Upserted {} ships", ships.len());
             }
-            println!("Inserted");
 
             tokio::time::sleep(tokio::time::Duration::from_millis(1_000)).await;
         }
