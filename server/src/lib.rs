@@ -123,4 +123,31 @@ impl Ship {
         })
         .flatten()
     }
+
+    pub async fn embed_text(input: &str) -> Result<Vec<f32>, reqwest::Error> {
+        static EMBEDDING_MODEL: &str = "text-embedding-3-small";
+
+        Ok(embeddings_client()
+            .post("https://api.openai.com/v1/embeddings")
+            .json(&json!({ "input": input, "model": EMBEDDING_MODEL }))
+            .send()
+            .await?
+            .json::<serde_json::Value>()
+            .await?
+            .pointer("/data/0/embedding")
+            .unwrap()
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_f64().unwrap() as f32)
+            .collect())
+    }
+
+    pub async fn embed(&self) -> Result<Option<Vec<f32>>, reqwest::Error> {
+        if let Some(desc) = &self.description {
+            Self::embed_text(desc).await.map(Some)
+        } else {
+            Ok(None)
+        }
+    }
 }
