@@ -221,6 +221,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 &ship.description,
                                 &ship.approved_at,
                                 &ship.ysws,
+                                &vec,
                             ],
                         )
                         .await
