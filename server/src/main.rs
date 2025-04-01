@@ -141,8 +141,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .get()
         .await?
         .prepare_cached("
-            INSERT INTO ship (id, heard_through, github_username, country, hours, screenshot_url, code_url, demo_url, description, approved_at, ysws)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            INSERT INTO ship (id, heard_through, github_username, country, hours, screenshot_url, code_url, demo_url, description, approved_at, ysws, embedding)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             ON CONFLICT (id) DO UPDATE SET
                 heard_through = $2,
                 github_username = $3,
@@ -153,7 +153,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 demo_url = $8,
                 description = $9,
                 approved_at = $10,
-                ysws = $11;")
+                ysws = $11,
+                embedding = $12;")
         .await?;
     //#endregion
 
