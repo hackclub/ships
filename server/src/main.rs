@@ -201,6 +201,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         loop {
             if let Some((ships, new_cursor)) = Ship::fetch_unified_page(&cursor).await {
                 for ship in ships.iter() {
+                    let vec = match ship.embed().await.unwrap() {
+                        Some(v) => Some(pgvector::Vector::from(v)),
+                        None => None,
+                    };
+
                     pool_item
                         .query(
                             &insert_ship_stmt,
