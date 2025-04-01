@@ -61,6 +61,32 @@ async fn screenshots(data: web::Data<AppState>) -> Result<impl Responder, Box<dy
     Ok(web::Json(screenshot_urls))
 }
 
+#[derive(Deserialize)]
+struct SearchInfo {
+    query: String,
+}
+
+#[get("/search")]
+async fn search(
+    data: web::Data<AppState>,
+    info: web::Query<SearchInfo>,
+) -> Result<impl Responder, Box<dyn Error>> {
+    let embedding = Ship::embed_text(&info.query).await?;
+    let embedding = pgvector::Vector::from(embedding);
+
+    let row = data
+        .db_pool
+        .get()
+        .await?
+        .query_one(
+            "SELECT * FROM ship ORDER BY embedding <-> $1 LIMIT 1",
+            &[&embedding],
+        )
+        .await?;
+
+    Ok(row.get::<&str, String>("id"))
+}
+
 struct AppState {
     db_pool: Pool,
 }
