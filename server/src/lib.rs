@@ -81,7 +81,7 @@ impl Ship {
                         .flatten()
                         .expect("arstrs");
 
-                    Ship {
+                    let mut ship = Ship {
                         id: Self::field(t.get("id")).expect("a record id"),
                         heard_through: Self::field(f.get("How did you hear about this?")),
                         github_username: Self::field(f.get("GitHub Username")),
@@ -106,7 +106,9 @@ impl Ship {
                             .pointer("/fields/YSWS–Name/0")
                             .and_then(|v| v.as_str())
                             .map(|s| s.to_string()),
-                    }
+                    };
+
+                    ship
                 })
                 .collect::<Vec<Ship>>(),
             cursor,
