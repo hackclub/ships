@@ -266,6 +266,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .app_data(web::Data::new(app_state))
             .service(index)
             .service(screenshots)
+            .service(search)
     })
     .bind(("0.0.0.0", port))?
     .run()
