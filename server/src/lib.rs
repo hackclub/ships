@@ -1,5 +1,3 @@
-#![feature(async_closure)]
-
 use once_cell::sync::OnceCell;
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde::Serialize;
