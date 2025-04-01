@@ -110,19 +110,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .get()
         .await
         .unwrap()
+        .execute("CREATE EXTENSION IF NOT EXISTS vector;", &[])
+        .await
+        .unwrap();
+
+    db_pool
+        .get()
+        .await
+        .unwrap()
         .batch_execute(
             "CREATE TABLE IF NOT EXISTS ship (
-id TEXT PRIMARY KEY,
-heard_through TEXT,
-github_username TEXT,
-country TEXT,
-hours DOUBLE PRECISION,
-screenshot_url TEXT,
-code_url TEXT,
-demo_url TEXT,
-description TEXT,
-approved_at DATE,
-ysws TEXT
+    id TEXT PRIMARY KEY,
+    heard_through TEXT,
+    github_username TEXT,
+    country TEXT,
+    hours DOUBLE PRECISION,
+    screenshot_url TEXT,
+    code_url TEXT,
+    demo_url TEXT,
+    description TEXT,
+    approved_at DATE,
+    ysws TEXT,
+    embedding VECTOR(1536)
 );",
         )
         .await
