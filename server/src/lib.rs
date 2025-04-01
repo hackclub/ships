@@ -1,5 +1,33 @@
+#![feature(async_closure)]
+
+use once_cell::sync::OnceCell;
+use reqwest::header::{HeaderMap, HeaderValue};
 use serde::Serialize;
+use serde_json::json;
 use time::{macros::format_description, Date};
+
+fn embeddings_client() -> &'static reqwest::Client {
+    static EMBEDDINGS_CLIENT: OnceCell<reqwest::Client> = OnceCell::new();
+    EMBEDDINGS_CLIENT.get_or_init(|| {
+        let client = reqwest::ClientBuilder::new();
+
+        let bearer = format!(
+            "Bearer {}",
+            std::env::var("OPENAI_KEY").expect("an OPENAI_KEY env var")
+        );
+        let mut headers = HeaderMap::new();
+        headers.append(
+            reqwest::header::CONTENT_TYPE,
+            HeaderValue::from_static("application/json"),
+        );
+        headers.append(
+            reqwest::header::AUTHORIZATION,
+            HeaderValue::from_str(&bearer).expect("a str headervalue"),
+        );
+
+        client.default_headers(headers).build().unwrap()
+    })
+}
 
 #[derive(Debug, Serialize)]
 pub struct Ship {
