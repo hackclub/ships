@@ -79,7 +79,7 @@ async fn search(
         .get()
         .await?
         .query_one(
-            "SELECT * FROM ship ORDER BY embedding <-> $1 LIMIT 1",
+            "SELECT * FROM ship ORDER BY embedding <-> $1 where description is not null LIMIT 1",
             &[&embedding],
         )
         .await?;
