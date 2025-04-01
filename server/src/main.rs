@@ -1,8 +1,7 @@
 use actix_cors::Cors;
-use actix_web::{
-    get, http::StatusCode, middleware, web, App, HttpResponse, HttpServer, Responder, Result,
-};
+use actix_web::{get, middleware, web, App, HttpResponse, HttpServer, Responder, Result};
 use deadpool_postgres::{Config, GenericClient, ManagerConfig, Pool, RecyclingMethod};
+use serde::Deserialize;
 use serde_json::json;
 use server::Ship;
 use std::error::Error;
