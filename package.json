@@ -8,6 +8,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
+   "engines": {
+    "node": ">=22.0.0"
+  },
   "devDependencies": {
     "@types/animejs": "^3.1.13",
     "@types/three": "^0.174.0",
