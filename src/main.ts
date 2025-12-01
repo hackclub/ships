@@ -55,7 +55,7 @@ async function loadShips() {
     return JSON.parse(cachedShips);
   }
 
-  const url = "https://api.ships.hackclub.com/";
+  const url = "https://gist.githubusercontent.com/NeonGamerBot-QK/1c731968255ca85232be5c34890594d8/raw/4a6bef6e7b5cce921d263cadf3627dbc85010425/ships-export6.json";
   const response = await fetch(url);
   if (!response?.body) return;
 
