@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_05_023156) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_05_030623) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -90,5 +90,23 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_05_023156) do
     t.string "display_name_from_slack"
     t.string "first_name"
     t.string "last_name"
+  end
+
+  create_table "ysws_project_entries", force: :cascade do |t|
+    t.string "airtable_id"
+    t.string "ysws"
+    t.string "email"
+    t.datetime "approved_at"
+    t.string "playable_url"
+    t.string "code_url"
+    t.text "description"
+    t.decimal "hours_spent"
+    t.decimal "hours_spent_actual"
+    t.string "archived_demo"
+    t.string "archived_repo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.text "map_lat_ciphertext"
+    t.text "map_long_ciphertext"
   end
 end
