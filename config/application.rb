@@ -23,5 +23,8 @@ module Ships
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Identity provider URL for OAuth
+    config.identity = ENV.fetch("IDENTITY_URL", "https://identity.hackclub.com")
   end
 end

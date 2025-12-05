@@ -4,8 +4,8 @@ source "https://rubygems.org"
 gem "rails", "~> 8.0.4"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
-# Use sqlite3 as the database for Active Record
-gem "sqlite3", ">= 2.1"
+# Use PostgreSQL as the database for Active Record
+gem "pg", "~> 1.5"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
@@ -61,3 +61,16 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+gem "flipper", "~> 1.3"
+gem "flipper-ui", "~> 1.3"
+gem "flipper-active_record", "~> 1.3"
+gem "lockbox", "~> 2.1"
+gem "norairrecord"
+gem "omniauth"
+gem "omniauth_openid_connect"
+gem "omniauth-oauth2"
+gem "blazer"
+gem 'console1984'
+gem 'audits1984'
+gem 'faraday-net_http_persistent', '~> 2.0'
