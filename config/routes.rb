@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "/dash", to: "dashboard#index", as: :dash
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # OmniAuth routes (POST handled by OmniAuth middleware)
@@ -32,6 +33,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :ysws_entries, only: [:index]
+      resources :me, only: [:index]
     end
   end
 

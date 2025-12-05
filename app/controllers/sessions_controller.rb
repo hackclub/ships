@@ -10,7 +10,7 @@ class SessionsController < ApplicationController
     # Fetch user info from the API and update the user record
     fetch_and_update_user_info(user, auth.credentials.token)
 
-    redirect_to root_path, notice: "Signed in successfully."
+    redirect_to dash_path, notice: "Signed in successfully."
   end
 
   # Handles authentication failures from OmniAuth.

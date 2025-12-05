@@ -9,12 +9,14 @@
   </div>
 
   <div id="details"></div>
-  <% if logged_in? %>
-    <p>Welcome, <%= current_user.display_name %>!</p>
-    <%= button_to "Sign Out", logout_path, method: :delete, class: "btn" %>
-  <% else %>
-    <%= link_to "Sign in with Hack Club", "/auth/hack_club", class: "btn" %>
-  <% end %>
+
+  <div id="auth-overlay">
+    <% if logged_in? %>
+      <%= link_to "Go to Dashboard", dash_path, class: "btn" %>
+    <% else %>
+      <%= link_to "Sign in with Hack Club", "/auth/hack_club", class: "btn" %>
+    <% end %>
   </div>
+</div>
 
 <%= vite_typescript_tag "three_app" %>
