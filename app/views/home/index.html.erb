@@ -1,10 +1,20 @@
-<div class="container">
-  <h1>Ships</h1>
+<div id="app">
+  <canvas></canvas>
 
+  <div id="cover">
+    <p id="loading-progress">Loading…</p>
+    <svg>
+      <line id="line" />
+    </svg>
+  </div>
+
+  <div id="details"></div>
   <% if logged_in? %>
     <p>Welcome, <%= current_user.display_name %>!</p>
     <%= button_to "Sign Out", logout_path, method: :delete, class: "btn" %>
   <% else %>
     <%= link_to "Sign in with Hack Club", "/auth/hack_club", class: "btn" %>
   <% end %>
-</div>
+  </div>
+
+<%= vite_typescript_tag "three_app" %>

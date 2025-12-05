@@ -74,3 +74,4 @@ gem "blazer"
 gem 'console1984'
 gem 'audits1984'
 gem 'faraday-net_http_persistent', '~> 2.0'
+gem "vite_rails", "~> 3.0"

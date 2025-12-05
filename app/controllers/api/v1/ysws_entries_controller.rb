@@ -5,7 +5,7 @@ module Api
       # Returns all YSWS project entries as JSON, cached for 5 minutes.
       def index
         entries = Rails.cache.fetch("api/v1/ysws_entries", expires_in: 5.minutes) do
-          YswsProjectEntry.all.map do |entry|
+          YswsProjectEntry.where.not(ysws: "Boba Drops").map do |entry|
             {
               id: entry.airtable_id,
               ysws: entry.ysws,
