@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_05_030623) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_05_031349) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -108,5 +108,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_05_030623) do
     t.datetime "updated_at", null: false
     t.text "map_lat_ciphertext"
     t.text "map_long_ciphertext"
+    t.string "country"
+    t.string "demo_url"
+    t.string "github_username"
+    t.string "heard_through"
   end
 end

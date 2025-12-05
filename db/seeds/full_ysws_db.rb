@@ -10,24 +10,31 @@ end
 CSV.foreach(CSV_PATH, headers: true) do |row|
   raw = row.to_h
 
+  # Hours fallback: override hours -> normal hours
+  hours = raw["Override Hours Spent"].presence || raw["Hours Spent"].presence
+
   attrs = {
-    airtable_id: raw["Record ID"],
-    ysws: raw["YSWS"],
-    email: raw["Email"],
-    approved_at: raw["Approved At"],
-    playable_url: raw["Playable URL"],
-    code_url: raw["Code URL"],
-    description: raw["Description"],
-    hours_spent: raw["Hours Spent"],
-    hours_spent_actual: raw["Override Hours Spent"],
+    airtable_id: raw["Record ID"] || raw["id"],
+    ysws: raw["YSWS"] || raw["ysws"],
+    email: raw["Email"] || raw["email"],
+    approved_at: raw["Approved At"] || raw["approved_at"],
+    playable_url: raw["Playable URL"] || raw["playable_url"],
+    code_url: raw["Code URL"] || raw["code_url"],
+    demo_url: raw["Demo URL"] || raw["demo_url"],
+    description: raw["Description"] || raw["description"],
+    hours_spent: hours,
+    hours_spent_actual: raw["Override Hours Spent"] || raw["hours"],
     archived_demo: raw["Archive - Live URL"],
     archived_repo: raw["Archive - Code URL"],
     map_lat: raw["Geocoded - Latitude"],
-    map_long: raw["Geocoded - Longitude"]
+    map_long: raw["Geocoded - Longitude"],
+    country: raw["Country"] || raw["country"],
+    github_username: raw["GitHub Username"] || raw["github_username"],
+    heard_through: raw["Heard Through"] || raw["heard_through"]
   }
 
-  # Convert empty strings to nil
-  attrs.transform_values! { |v| v == '' ? nil : v }
+  # Convert empty strings and newline-only strings to nil
+  attrs.transform_values! { |v| v.to_s.strip.empty? ? nil : v }
 
   airtable_id = attrs[:airtable_id]
   if airtable_id.nil?
@@ -40,7 +47,7 @@ CSV.foreach(CSV_PATH, headers: true) do |row|
   begin
     entry.assign_attributes(attrs.compact)
     entry.save!
-    puts "Saved YswsProjectEntry airtable_id=#{entry.airtable_id}"
+    puts "Saved YswsProjectEntry airtable_id=#{entry.airtable_id} (#{entry.ysws})"
   rescue => e
     puts "Failed to save YswsProjectEntry airtable_id=#{airtable_id}: #{e.class} - #{e.message}"
   end
