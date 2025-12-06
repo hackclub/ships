@@ -34,9 +34,15 @@ class AirtableJob < ApplicationJob
     # Fetch all records and process in batches
     all_records = table.records
 
-    # DEV ONLY: Filter to specific email for testing
+    # DEV ONLY: Filter to projects from last 3 months for testing
     if Rails.env.development?
-      all_records = all_records.select { |r| r.fields["Email"] == "neon@saahild.com" }
+      three_months_ago = 3.months.ago
+      all_records = all_records.select do |r|
+        approved_at = r.fields["Approved At"]
+        approved_at.present? && Time.parse(approved_at) >= three_months_ago
+      rescue ArgumentError
+        false
+      end
     end
 
     Rails.logger.info "[AirtableJob] Fetched #{all_records.size} records from Airtable"

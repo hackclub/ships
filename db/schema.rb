@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_06_022615) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_06_033032) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -206,6 +206,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_06_022615) do
     t.string "github_username"
     t.string "heard_through"
     t.string "screenshot_url"
+    t.integer "github_stars"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

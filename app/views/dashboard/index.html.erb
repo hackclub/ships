@@ -29,10 +29,16 @@
       <%= card_footer do %>
         <div class="card-actions">
           <% if entry.demo_url.present? %>
-            <%= link_to "View Demo", entry.demo_url, class: "btn btn-primary", target: "_blank" %>
+            <%= link_to "🌐 Demo", entry.demo_url, class: "btn btn-primary", target: "_blank" %>
           <% end %>
           <% if entry.code_url.present? %>
-            <%= link_to "View Code", entry.code_url, class: "btn btn-secondary", target: "_blank" %>
+            <%= link_to "💻 Code", entry.code_url, class: "btn btn-secondary", target: "_blank" %>
+          <% end %>
+          <% if entry.viral? %>
+            <%= link_to "📈 Virality Stats", fetch_virality_path(entry), class: "btn btn-accent", target: "_blank" %>
+          <% end %>
+          <% if entry.github_stars.present? %>
+            <span class="meta-item">⭐ <%= entry.github_stars %> stars</span>
           <% end %>
         </div>
       <% end %>
