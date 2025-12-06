@@ -4,11 +4,8 @@ class SessionsController < ApplicationController
   # Handles the OmniAuth callback and logs the user in.
   def create
     auth = request.env["omniauth.auth"]
-    user = User.from_omniauth(auth)
+    user = find_or_create_user_from_api(auth)
     session[:user_id] = user.id
-
-    # Fetch user info from the API and update the user record
-    fetch_and_update_user_info(user, auth.credentials.token)
 
     redirect_to dash_path, notice: "Signed in successfully."
   end
@@ -26,21 +23,29 @@ class SessionsController < ApplicationController
 
   private
 
-  # Fetches user info from the Hack Club API and updates the user record.
+  # Fetches user info from the Hack Club API and finds or creates user by email.
+  # This ensures each email gets its own user record, even if OAuth UID is shared.
   #
-  # @param user [User] The user to update.
-  # @param token [String] The OAuth access token.
-  def fetch_and_update_user_info(user, token)
+  # @param auth [OmniAuth::AuthHash] The auth hash from the OmniAuth callback.
+  # @return [User] The found or created user.
+  def find_or_create_user_from_api(auth)
+    token = auth.credentials.token
+
     response = Faraday.get("https://auth.hackclub.com/api/v1/me") do |req|
       req.headers["Authorization"] = "Bearer #{token}"
     end
 
     data = JSON.parse(response.body)
     identity = data["identity"]
+    email = identity["primary_email"]
 
-    user.update(
-      email: identity["primary_email"],
+    user = User.find_or_initialize_by(email: email)
+    user.update!(
+      provider: auth.provider,
+      uid: auth.uid,
+      access_token: token,
       slack_id: identity["slack_id"]
     )
+    user
   end
 end

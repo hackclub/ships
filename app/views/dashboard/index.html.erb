@@ -5,19 +5,38 @@
   <p>Welcome, <%= current_user.display_name %>!</p>
   <br />
   <div class="card-grid">
-  <% @users_entries.each do |data| %>
-    <%= card variant: :dark do %>
-  <%= card_header do %>
-    <%= card_title "Title" %>
-  <% end %>
-  <%= card_body do %>
-    <p><%=data.to_json%></p>
-  <% end %>
-  <%= card_footer do %>
-    <button>Action</button>
-  <% end %>
-<% end %>
-
+  <% @users_entries.each do |entry| %>
+    <%= card do %>
+      <%= card_header do %>
+        <%= card_title entry.ysws || "Project" %>
+      <% end %>
+      <%= card_body do %>
+        <p class="card-description"><%= truncate(entry.description, length: 150) %></p>
+        <div class="card-meta">
+          <% if entry.hours_spent.present? %>
+            <span class="meta-item">⏱️ <%= entry.hours_spent %> hrs</span>
+          <% end %>
+          <% if entry.country.present? %>
+            <span class="meta-item">📍 <%= entry.country %></span>
+          <% end %>
+          <% if entry.approved_at.present? %>
+            <span class="meta-item status-approved">✅ Approved</span>
+          <% else %>
+            <span class="meta-item status-pending">⏳ Pending</span>
+          <% end %>
+        </div>
+      <% end %>
+      <%= card_footer do %>
+        <div class="card-actions">
+          <% if entry.demo_url.present? %>
+            <%= link_to "View Demo", entry.demo_url, class: "btn btn-primary", target: "_blank" %>
+          <% end %>
+          <% if entry.code_url.present? %>
+            <%= link_to "View Code", entry.code_url, class: "btn btn-secondary", target: "_blank" %>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
   <% end %>
   </div>
 </main>

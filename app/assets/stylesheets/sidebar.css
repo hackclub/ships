@@ -1,3 +1,26 @@
+.impersonate-banner {
+  background: #d97706;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.impersonate-banner button {
+  background: rgba(0, 0, 0, 0.2);
+  border: none;
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.impersonate-banner button:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
 .sidebar {
   position: fixed;
   left: 0;
@@ -82,6 +105,7 @@
   background: transparent;
   color: #e0e0e0;
   opacity: 0.3;
+  border: 2px solid #f97316;
 }
 
 .sidebar-btn-admin:hover {
@@ -93,8 +117,25 @@
   margin-left: 4rem;
   min-height: 100vh;
   padding: 4rem;
-  background: #0f0f1a;
-  color: #e0e0e0;
+  background: #1d1d2b;
+  color: #e5e5e5;
+}
+
+.main-content[data-theme="dark"] {
+  --b1: 0.2 0 0;
+  --b2: 0.18 0 0;
+  --b3: 0.15 0 0;
+  --bc: 0.9 0 0;
+  --p: 0.65 0.2 260;
+  --pc: 0.98 0 0;
+  --s: 0.7 0.15 310;
+  --sc: 0.98 0 0;
+  --a: 0.75 0.18 180;
+  --ac: 0.15 0 0;
+  --n: 0.25 0.02 260;
+  --nc: 0.9 0 0;
+  background: #1d1d2b;
+  color: #e5e5e5;
 }
 
 .main-content h1 {

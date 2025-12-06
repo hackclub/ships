@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="<%= controller_name == 'admin' ? 'dark' : 'light' %>">
   <head>
     <title><%= content_for(:title) || "Ships" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -34,6 +34,12 @@
   </head>
 
   <body>
+    <% if impersonating? %>
+      <div class="impersonate-banner">
+        <span style="margin-left: 5rem;">👤 Viewing as <strong><%= current_user.display_name %></strong></span>
+        <%= button_to "Stop Impersonating", admin_stop_impersonating_path, method: :delete, class: "btn btn-xs btn-ghost" %>
+      </div>
+    <% end %>
     <%= yield %>
   </body>
 </html>

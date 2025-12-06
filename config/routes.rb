@@ -16,6 +16,11 @@ Rails.application.routes.draw do
   }
 
   constraints admin_constraint do
+    get "/admin", to: "admin#index", as: :admin
+    get "/admin/users", to: "admin#users", as: :admin_users
+    post "/admin/impersonate/:id", to: "admin#impersonate", as: :admin_impersonate
+    post "/admin/impersonate_by_email", to: "admin#impersonate_by_email", as: :admin_impersonate_by_email
+    delete "/admin/stop_impersonating", to: "admin#stop_impersonating", as: :admin_stop_impersonating
     mount Flipper::UI.app(Flipper) => "/flipper"
     mount Blazer::Engine => "/blazer"
     mount Audits1984::Engine => "/console"

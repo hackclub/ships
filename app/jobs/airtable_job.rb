@@ -33,8 +33,14 @@ class AirtableJob < ApplicationJob
 
     # Fetch all records and process in batches
     all_records = table.records
-    Rails.logger.info "[AirtableJob] Fetched #{all_records.size} records from Airtable"
 
+    # DEV ONLY: Filter to specific email for testing
+    if Rails.env.development?
+      all_records = all_records.select { |r| r.fields["Email"] == "neon@saahild.com" }
+    end
+
+    Rails.logger.info "[AirtableJob] Fetched #{all_records.size} records from Airtable"
+    
     all_records.each_slice(BATCH_SIZE) do |batch|
       batch_count += 1
       Rails.logger.info "[AirtableJob] Processing batch #{batch_count} (#{batch.size} records)"
@@ -96,17 +102,20 @@ class AirtableJob < ApplicationJob
     hours = presence(fields["Override Hours Spent"]) || presence(fields["Hours Spent"])
 
     # Extract screenshot URL from Airtable attachment field
-    screenshot = fields["Screenshot"]
-    screenshot_url = screenshot.is_a?(Array) && screenshot.first ? screenshot.first["url"] : nil
+    # screenshot = fields["Screenshot"]
+    # screenshot_url = screenshot.is_a?(Array) && screenshot.first ? screenshot.first["url"] : nil
+
+    # YSWS Name comes as an array from Airtable lookup, extract first value
+    ysws_name = fields["YSWS Name - Lookup"]
+    ysws_name = ysws_name.first if ysws_name.is_a?(Array)
 
     attrs = {
       airtable_id: record.id,
-      ysws: fields["YSWS"],
+      ysws: ysws_name,
       email: fields["Email"],
       approved_at: fields["Approved At"],
       playable_url: fields["Playable URL"],
       code_url: fields["Code URL"],
-      demo_url: fields["Demo URL"],
       description: presence(fields["Description"]),
       hours_spent: hours,
       hours_spent_actual: fields["Override Hours Spent"],
@@ -116,8 +125,8 @@ class AirtableJob < ApplicationJob
       map_long: fields["Geocoded - Longitude"],
       country: fields["Country"],
       github_username: fields["GitHub Username"],
-      heard_through: fields["Heard Through"],
-      screenshot_url: screenshot_url
+      heard_through: fields["Heard Through"]
+      # screenshot_url: screenshot_url
     }
 
     # Sanitize all string values to remove null bytes
