@@ -34,6 +34,7 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :ysws_entries, only: [:index]
       resources :me, only: [:index]
+      resources :cached_images, only: [:show]
     end
   end
 

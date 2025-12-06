@@ -10,9 +10,37 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_05_031349) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_06_011017) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
 
   create_table "audits1984_audits", force: :cascade do |t|
     t.integer "status", default: 0, null: false
@@ -23,6 +51,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_05_031349) do
     t.datetime "updated_at", null: false
     t.index ["auditor_id"], name: "index_audits1984_audits_on_auditor_id"
     t.index ["session_id"], name: "index_audits1984_audits_on_session_id"
+  end
+
+  create_table "cached_images", force: :cascade do |t|
+    t.string "airtable_id", null: false
+    t.string "original_url"
+    t.datetime "expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["airtable_id"], name: "index_cached_images_on_airtable_id", unique: true
   end
 
   create_table "console1984_commands", force: :cascade do |t|
@@ -112,5 +149,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_05_031349) do
     t.string "demo_url"
     t.string "github_username"
     t.string "heard_through"
+    t.string "screenshot_url"
   end
+
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
 end

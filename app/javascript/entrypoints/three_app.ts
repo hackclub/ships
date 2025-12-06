@@ -45,6 +45,53 @@ let clicked = false;
 window.addEventListener("mousedown", () => (clicked = true));
 window.addEventListener("mouseup", () => (clicked = false));
 
+// Cache for fetched image URLs to avoid repeated API calls
+const imageCache = new Map<string, string | null>();
+
+// Fetches a cached image from the API and updates the DOM
+async function fetchCachedImage(airtableId: string, originalUrl: string, containerId: string) {
+    // Check local cache first
+    if (imageCache.has(airtableId)) {
+        const cachedUrl = imageCache.get(airtableId);
+        updateImageContainer(containerId, cachedUrl);
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/v1/cached_images/${airtableId}?url=${encodeURIComponent(originalUrl)}`);
+        const data = await response.json();
+
+        if (data.cached && data.url) {
+            imageCache.set(airtableId, data.url);
+            updateImageContainer(containerId, data.url);
+        } else {
+            // Image is being cached, retry after a delay
+            imageCache.set(airtableId, null);
+            setTimeout(() => {
+                imageCache.delete(airtableId);
+                const container = document.getElementById(containerId);
+                if (container) {
+                    fetchCachedImage(airtableId, originalUrl, containerId);
+                }
+            }, 2000);
+        }
+    } catch (error) {
+        console.error('Failed to fetch cached image:', error);
+        updateImageContainer(containerId, null);
+    }
+}
+
+function updateImageContainer(containerId: string, imageUrl: string | null) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (imageUrl) {
+        container.innerHTML = `<img src="${imageUrl}" alt="Ship screenshot" class="ship-image" />`;
+    } else {
+        container.innerHTML = '<span class="ship-image-loading">Loading image...</span>';
+    }
+}
+
 async function loadShips() {
     loadingProgressDisplay.textContent = "Loading ships";
 
@@ -80,7 +127,7 @@ async function loadShips() {
     const utf8decoder = new TextDecoder("utf-8");
     const decodedText = utf8decoder.decode(new Uint8Array(values));
 
-    // await localforage.setItem("ships", decodedText);
+    await localforage.setItem("ships", decodedText);
 
     return JSON.parse(decodedText);
 }
@@ -166,17 +213,15 @@ async function buildScene() {
 
     const shipMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 
-    // Ship color configuration - modify this function to change how ships are colored
+    // Ship color configuration - green if created in last month, otherwise white
     function getShipColor(shipData: any, index: number): THREE.Color {
-        // Option 1: Random colors
-        return new THREE.Color(Math.random(), Math.random(), Math.random());
+        const oneMonthAgo = Date.now() / 1000 - 30 * 24 * 60 * 60;
         
-        // Option 2: Color by YSWS (uncomment to use)
-        // const hash = shipData.ysws?.split('').reduce((a: number, c: string) => a + c.charCodeAt(0), 0) || 0;
-        // return new THREE.Color().setHSL((hash % 360) / 360, 0.7, 0.5);
+        if (shipData.approved_at && shipData.approved_at !== 'null' && shipData.approved_at > oneMonthAgo) {
+            return new THREE.Color(0x00ff00); // Green for recent ships
+        }
         
-        // Option 3: Fixed color
-        // return new THREE.Color(0x00ff00);
+        return new THREE.Color(0xffffff); // White for older ships
     }
     const detailedShipShadowMaterial = new THREE.ShaderMaterial({
         transparent: true,
@@ -220,7 +265,7 @@ async function buildScene() {
 
             ships = new THREE.InstancedMesh(shipGeometry, shipMaterial, shipCount);
             ships.instanceMatrix.setUsage(THREE.StaticDrawUsage); // https://www.khronos.org/opengl/wiki/Buffer_Object#Buffer_Object_Usage
-            
+
             // Initialize instance colors (required for setColorAt to work)
             const defaultColor = new THREE.Color(0xffffff);
             for (let i = 0; i < shipCount; i++) {
@@ -420,6 +465,7 @@ async function buildScene() {
 
     let selectedPosition: THREE.Vector3;
     let selectedShipIndex: number | null;
+    let lastFetchedShipId: string | null = null;
     function render(time: number) {
         renderer.setClearColor(
             Utils.interpolateOklab(0x000022, 0x3d6db7, scrollPos),
@@ -547,7 +593,21 @@ async function buildScene() {
                 url = new URL(url).pathname;
             } catch (e) { }
 
+            // Build image HTML - only fetch when ship changes
+            let imageHtml = '';
+            if (si.screenshot_url && si.screenshot_url !== 'null' && si.id) {
+                const imgId = `ship-img-${si.id}`;
+                imageHtml = `<div id="${imgId}" class="ship-image-container"><span class="ship-image-loading">Loading image...</span></div>`;
+                
+                // Only fetch image once per ship selection
+                if (lastFetchedShipId !== si.id) {
+                    lastFetchedShipId = si.id;
+                    fetchCachedImage(si.id, si.screenshot_url, imgId);
+                }
+            }
+
             document.getElementById("details")!.innerHTML = `
+${imageHtml}
 <span style="font-size: 1.2em; font-weight: bold;">${si.ysws}</span>
 <br />
 <span>${si.description ? si.description.slice(0, 100) + (si.description.length > 100 ? '...' : '') : ''}</span>
@@ -558,6 +618,7 @@ async function buildScene() {
 `;
         } else {
             document.getElementById("details")!.innerHTML = '';
+            lastFetchedShipId = null;
         }
 
         if (shipGeometry && detailedShip) {

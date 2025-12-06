@@ -95,6 +95,10 @@ class AirtableJob < ApplicationJob
 
     hours = presence(fields["Override Hours Spent"]) || presence(fields["Hours Spent"])
 
+    # Extract screenshot URL from Airtable attachment field
+    screenshot = fields["Screenshot"]
+    screenshot_url = screenshot.is_a?(Array) && screenshot.first ? screenshot.first["url"] : nil
+
     attrs = {
       airtable_id: record.id,
       ysws: fields["YSWS"],
@@ -112,7 +116,8 @@ class AirtableJob < ApplicationJob
       map_long: fields["Geocoded - Longitude"],
       country: fields["Country"],
       github_username: fields["GitHub Username"],
-      heard_through: fields["Heard Through"]
+      heard_through: fields["Heard Through"],
+      screenshot_url: screenshot_url
     }
 
     # Sanitize all string values to remove null bytes

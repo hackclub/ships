@@ -16,7 +16,8 @@ module Api
               description: entry.description || "null",
               github_username: entry.github_username || "null",
               heard_through: entry.heard_through || "null",
-              hours: entry.hours_spent_actual&.to_f || entry.hours_spent&.to_f || "null"
+              hours: entry.hours_spent_actual&.to_f || entry.hours_spent&.to_f || "null",
+              screenshot_url: entry.screenshot_url || "null"
             }
           end
         end

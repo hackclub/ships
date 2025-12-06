@@ -1,7 +1,7 @@
 {
   "all": {
     "sourceCodeDir": "app/javascript",
-    "watchAdditionalPaths": []
+    "watchAdditionalPaths": ["app/assets/stylesheets/**/*"]
   },
   "development": {
     "autoBuild": true,
