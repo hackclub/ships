@@ -1,0 +1,357 @@
+<%= render "shared/sidebar" %>
+
+<main class="main-content" data-theme="dark">
+  <div class="docs-header">
+    <h1>📚 API Documentation</h1>
+    <p class="subtitle">Ships API v1</p>
+  </div>
+
+  <div class="docs-intro">
+    <p>All endpoints return JSON. Authenticated endpoints require a valid session cookie (login via the web UI first).</p>
+    <p>Base URL: <code><%= request.base_url %>/api/v1</code></p>
+  </div>
+
+  <% if logged_in? %>
+    <div class="cookie-helper">
+      <p>🍪 Want to use the authenticated API endpoints? Click below to copy your cookie header!</p>
+      <button class="copy-cookie-btn" id="copy-cookie-btn" data-cookie="<%= request.headers['Cookie'] %>">
+        📋 Copy Cookie Header
+      </button>
+      <span class="copy-feedback" id="copy-feedback"></span>
+    </div>
+  <% end %>
+
+  <div class="endpoints-list">
+    <% @endpoints.each do |endpoint| %>
+      <div class="endpoint-card">
+        <div class="endpoint-header">
+          <span class="method method-<%= endpoint[:method].downcase %>"><%= endpoint[:method] %></span>
+          <code class="endpoint-path"><%= endpoint[:path] %></code>
+          <% if endpoint[:auth] == :admin %>
+            <span class="admin-badge">🛡️ Admin Only</span>
+          <% elsif endpoint[:auth] %>
+            <span class="auth-badge">🔒 Auth Required</span>
+          <% else %>
+            <span class="public-badge">🌐 Public</span>
+          <% end %>
+        </div>
+
+        <p class="endpoint-description"><%= endpoint[:description] %></p>
+
+        <div class="response-section">
+          <h4>Response Fields</h4>
+          <table class="response-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% endpoint[:response].each do |field| %>
+                <tr>
+                  <td><code><%= field[:field] %></code></td>
+                  <td><code><%= field[:type] %></code></td>
+                  <td><%= field[:description] %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="endpoint-actions">
+          <button class="copy-curl-btn" 
+                  data-url="<%= request.base_url %><%= endpoint[:path] %>"
+                  data-auth="<%= endpoint[:auth] %>"
+                  data-cookie="<%= request.headers['Cookie'] if logged_in? %>">
+            📋 Copy as cURL
+          </button>
+          <a href="<%= endpoint[:path] %>" target="_blank" class="try-btn">🌐 Test in Browser</a>
+          <span class="curl-feedback"></span>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</main>
+
+<style>
+  .docs-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .docs-header h1 {
+    margin: 0;
+  }
+
+  .subtitle {
+    color: #888;
+    margin-top: 0.25rem;
+  }
+
+  .docs-intro {
+    background: #2a2a3e;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .cookie-helper {
+    background: linear-gradient(135deg, #3a3a5e 0%, #2a2a4e 100%);
+    border: 1px solid #4a4a6e;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .cookie-helper p {
+    margin: 0;
+    color: #ddd;
+    flex: 1;
+  }
+
+  .copy-cookie-btn {
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+
+  .copy-cookie-btn:hover {
+    background: #5558e3;
+  }
+
+  .copy-feedback {
+    color: #4ade80;
+    font-size: 0.875rem;
+  }
+
+  .docs-intro p {
+    margin: 0.5rem 0;
+    color: #ccc;
+  }
+
+  .docs-intro code {
+    background: #1a1a2e;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    color: #a5b4fc;
+  }
+
+  .endpoints-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .endpoint-card {
+    background: #2a2a3e;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+
+  .endpoint-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .method {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .method-get {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+  }
+
+  .method-post {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+  }
+
+  .method-delete {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+  }
+
+  .endpoint-path {
+    background: #1a1a2e;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    color: #fff;
+    font-size: 0.9rem;
+  }
+
+  .auth-badge {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fcd34d;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  .admin-badge {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  .public-badge {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  .endpoint-description {
+    color: #ccc;
+    margin-bottom: 1rem;
+  }
+
+  .response-section h4 {
+    color: #888;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .response-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .response-table th {
+    text-align: left;
+    color: #888;
+    font-weight: 500;
+    padding: 0.5rem;
+    border-bottom: 1px solid #3a3a5e;
+  }
+
+  .response-table td {
+    padding: 0.5rem;
+    color: #ccc;
+    border-bottom: 1px solid #3a3a5e;
+  }
+
+  .response-table code {
+    background: #1a1a2e;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    color: #a5b4fc;
+    font-size: 0.8rem;
+  }
+
+  .endpoint-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .copy-curl-btn {
+    background: #3a3a5e;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background 0.2s;
+  }
+
+  .copy-curl-btn:hover {
+    background: #4a4a6e;
+  }
+
+  .try-btn {
+    background: #22c55e;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: background 0.2s;
+  }
+
+  .try-btn:hover {
+    background: #16a34a;
+  }
+
+  .curl-feedback {
+    color: #4ade80;
+    font-size: 0.875rem;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Cookie header copy button
+    const cookieBtn = document.getElementById('copy-cookie-btn');
+    const cookieFeedback = document.getElementById('copy-feedback');
+
+    if (cookieBtn) {
+      cookieBtn.addEventListener('click', function() {
+        const cookie = this.dataset.cookie;
+        const headerText = 'Cookie: ' + cookie;
+
+        navigator.clipboard.writeText(headerText).then(function() {
+          cookieFeedback.textContent = '✓ Copied!';
+          setTimeout(function() {
+            cookieFeedback.textContent = '';
+          }, 2000);
+        }).catch(function() {
+          cookieFeedback.textContent = '✗ Failed to copy';
+          cookieFeedback.style.color = '#f87171';
+        });
+      });
+    }
+
+    // cURL copy buttons
+    document.querySelectorAll('.copy-curl-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        const url = this.dataset.url;
+        const auth = this.dataset.auth;
+        const cookie = this.dataset.cookie;
+        const feedback = this.nextElementSibling.nextElementSibling;
+
+        let curlCmd = 'curl "' + url + '"';
+        
+        if ((auth === 'true' || auth === 'admin') && cookie) {
+          curlCmd += ' \\\n  -H "Cookie: ' + cookie + '"';
+        }
+
+        navigator.clipboard.writeText(curlCmd).then(function() {
+          feedback.textContent = '✓ Copied!';
+          setTimeout(function() {
+            feedback.textContent = '';
+          }, 2000);
+        }).catch(function() {
+          feedback.textContent = '✗ Failed';
+          feedback.style.color = '#f87171';
+        });
+      });
+    });
+  });
+</script>

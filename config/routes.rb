@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   get "/dash", to: "dashboard#index", as: :dash
   get "/stats", to: "stats#index", as: :stats
+  get "/docs", to: "docs#index", as: :docs
   post "/entries/:id/fetch_stars", to: "ysws_entries#fetch_stars", as: :fetch_stars
   get "/entries/:id/virality", to: "ysws_entries#fetch_virality", as: :fetch_virality
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -40,9 +41,17 @@ Rails.application.routes.draw do
   # API routes
   namespace :api do
     namespace :v1 do
-      resources :ysws_entries, only: [:index]
-      resources :me, only: [:index]
-      resources :cached_images, only: [:show]
+      resources :ysws_entries, only: [ :index ]
+      resources :me, only: [ :index ]
+      resources :cached_images, only: [ :show ]
+      resources :stats, only: [ :index ]
+      resources :dashboard, only: [ :index ]
+
+      namespace :admin do
+        get "users", to: "admin#users"
+        get "entries", to: "admin#entries"
+        get "stats", to: "admin#stats"
+      end
     end
   end
 
