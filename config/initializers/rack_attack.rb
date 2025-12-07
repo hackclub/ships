@@ -1,29 +1,15 @@
 # Rack::Attack configuration for rate limiting and abuse prevention.
 # See: https://github.com/rack/rack-attack
 
+# Only enable in production to avoid cache table issues in dev/test.
+Rack::Attack.enabled = Rails.env.production?
+
 class Rack::Attack
-  # Throttle login attempts by IP address.
-  # Limit to 5 requests per 20 seconds per IP.
-  throttle("auth/ip", limit: 5, period: 20.seconds) do |req|
-    req.ip if req.path.start_with?("/auth/") || req.path == "/oauth/callback"
-  end
-
-  # Throttle GitHub stars fetching to prevent API abuse.
-  # Limit to 10 requests per minute per IP.
-  throttle("fetch_stars/ip", limit: 10, period: 1.minute) do |req|
-    req.ip if req.path.include?("/fetch_stars")
-  end
-
-  # Throttle virality stats fetching to prevent Airtable API abuse.
-  # Limit to 10 requests per minute per IP.
-  throttle("virality/ip", limit: 10, period: 1.minute) do |req|
-    req.ip if req.path.include?("/virality")
-  end
-
-  # Throttle cached images endpoint to prevent SSRF/DoS.
-  # Limit to 30 requests per minute per IP.
-  throttle("cached_images/ip", limit: 30, period: 1.minute) do |req|
-    req.ip if req.path.start_with?("/api/v1/cached_images")
+  # Only apply rate limiting to API endpoints.
+  # Throttle API endpoints by IP address.
+  # Limit to 100 requests per minute per IP.
+  throttle("api/ip", limit: 100, period: 1.minute) do |req|
+    req.ip if req.path.start_with?("/api/v1/")
   end
 
   # Throttle admin API endpoints more strictly.

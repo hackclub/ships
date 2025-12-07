@@ -83,7 +83,9 @@ Rails.application.configure do
   # Configure this with your actual production domains.
   config.hosts = [
     ENV.fetch("RAILS_HOST", "ships.hackclub.com"),
-    /.*\.hackclub\.com/
+    /.*\.hackclub\.com/,
+    "localhost",
+    /localhost:\d+/
   ]
 
   # Skip DNS rebinding protection for health check endpoints.

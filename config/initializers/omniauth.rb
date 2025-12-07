@@ -1,9 +1,17 @@
 # OmniAuth configuration for Hack Club authentication.
-# Uses POST-only OAuth flow with proper CSRF protection.
 
-# SECURITY: Use POST-only for OAuth initiation to prevent login CSRF attacks.
-# The omniauth-rails_csrf_protection gem handles state/nonce verification.
-OmniAuth.config.allowed_request_methods = [ :post ]
+# Allow both GET and POST for OAuth initiation for compatibility.
+OmniAuth.config.allowed_request_methods = [ :get, :post ]
+OmniAuth.config.silence_get_warning = true
+
+# Log failures for debugging.
+OmniAuth.config.on_failure = Proc.new do |env|
+  message = env['omniauth.error.type']
+  Rails.logger.error "[OmniAuth] Failure: #{message} - #{env['omniauth.error']&.message}"
+  OmniAuth::FailureEndpoint.new(env).redirect_to_failure
+end
+
+OmniAuth.config.logger = Rails.logger
 
 Rails.application.config.middleware.use OmniAuth::Builder do
   provider :oauth2,
