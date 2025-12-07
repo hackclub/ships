@@ -28,6 +28,7 @@ Rails.application.routes.draw do
     mount Flipper::UI.app(Flipper) => "/flipper"
     mount Blazer::Engine => "/blazer"
     mount Audits1984::Engine => "/console"
+    mount MissionControl::Jobs::Engine, at: "/jobs"
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

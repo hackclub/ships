@@ -42,7 +42,7 @@ class AdminController < ApplicationController
   # Ensures the user is an admin before accessing admin pages.
   def require_admin
     unless real_current_user&.admin?
-      head :forbidden
+      redirect_to root_path, alert: "You must be an admin to access this page."
     end
   end
 end
