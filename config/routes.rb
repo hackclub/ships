@@ -6,10 +6,9 @@ Rails.application.routes.draw do
   get "/entries/:id/virality", to: "ysws_entries#fetch_virality", as: :fetch_virality
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # OmniAuth routes (POST handled by OmniAuth middleware)
-  post "/auth/:provider", to: lambda { |_| [ 404, {}, [ "Not Found" ] ] }
+  # OmniAuth routes - POST-only for security (CSRF protection via omniauth-rails_csrf_protection).
+  # The POST /auth/:provider is handled by OmniAuth middleware.
   get "/oauth/callback", to: "sessions#create"
-  get "/auth/:provider/callback", to: "sessions#create"
   get "/auth/failure", to: "sessions#failure"
   delete "/logout", to: "sessions#destroy"
 

@@ -1,10 +1,16 @@
+# Handles user authentication via OmniAuth.
 class SessionsController < ApplicationController
+  # CSRF is handled by omniauth-rails_csrf_protection gem for OAuth callbacks.
   skip_before_action :verify_authenticity_token, only: :create
 
   # Handles the OmniAuth callback and logs the user in.
+  # Includes session fixation protection via reset_session.
   def create
     auth = request.env["omniauth.auth"]
     user = find_or_create_user_from_api(auth)
+
+    # SECURITY: Regenerate session ID to prevent session fixation attacks.
+    reset_session
     session[:user_id] = user.id
 
     redirect_to dash_path, notice: "Signed in successfully."
@@ -12,12 +18,14 @@ class SessionsController < ApplicationController
 
   # Handles authentication failures from OmniAuth.
   def failure
-    redirect_to root_path, alert: "Authentication failed: #{params[:message]}"
+    redirect_to root_path, alert: "Authentication failed. Please try again."
   end
 
   # Logs the user out by clearing the session.
+  # Includes session fixation protection via reset_session.
   def destroy
-    session[:user_id] = nil
+    # SECURITY: Destroy entire session to prevent session reuse.
+    reset_session
     redirect_to root_path, notice: "Signed out successfully."
   end
 

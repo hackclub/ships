@@ -43,7 +43,9 @@ class YswsEntriesController < ApplicationController
     @total_engagement = cached_data[:total_engagement]
     @cached_at = cached_data[:fetched_at]
   rescue => e
-    redirect_to dash_path, alert: "Failed to fetch virality stats: #{e.message}"
+    # SECURITY: Log full error details but show generic message to user.
+    Rails.logger.error "[YswsEntriesController#fetch_virality] #{e.class}: #{e.message}\n#{e.backtrace&.first(5)&.join("\n")}"
+    redirect_to dash_path, alert: "Failed to fetch virality stats. Please try again later."
   end
 
   private

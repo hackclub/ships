@@ -71,6 +71,8 @@ gem "norairrecord"
 gem "omniauth"
 gem "omniauth_openid_connect"
 gem "omniauth-oauth2"
+gem "omniauth-rails_csrf_protection"
+gem "rack-attack"
 gem "blazer"
 gem 'console1984'
 gem 'audits1984'

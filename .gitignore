@@ -4,8 +4,9 @@
 # belong in git's global ignore instead:
 # `$XDG_CONFIG_HOME/git/ignore` or `~/.config/git/ignore`
 
-# Ignore bundler config.
+# Ignore bundler config and vendored gems.
 /.bundle
+/vendor/bundle
 
 # Ignore all environment files.
 /.env*
@@ -32,13 +33,29 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+/config/credentials/*.key
+
+# Data files
 airtable.csv
 e2.json
+*.csv
 
 # Vite Ruby
 /public/vite*
 node_modules
-# Vite uses dotenv and suggests to ignore local-only env files. See
-# https://vitejs.dev/guide/env-and-mode.html#env-files
+# Vite uses dotenv and suggests to ignore local-only env files.
+# See https://vitejs.dev/guide/env-and-mode.html#env-files
 *.local
-*.csv
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Byebug history
+.byebug_history

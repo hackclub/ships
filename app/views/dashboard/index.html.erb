@@ -28,11 +28,11 @@
       <% end %>
       <%= card_footer do %>
         <div class="card-actions">
-          <% if entry.demo_url.present? %>
-            <%= link_to "🌐 Demo", entry.demo_url, class: "btn btn-primary", target: "_blank" %>
+          <% if (demo = safe_external_url(entry.demo_url)) %>
+            <%= link_to "🌐 Demo", demo, class: "btn btn-primary", target: "_blank", rel: "noopener noreferrer" %>
           <% end %>
-          <% if entry.code_url.present? %>
-            <%= link_to "💻 Code", entry.code_url, class: "btn btn-secondary", target: "_blank" %>
+          <% if (code = safe_external_url(entry.code_url)) %>
+            <%= link_to "💻 Code", code, class: "btn btn-secondary", target: "_blank", rel: "noopener noreferrer" %>
           <% end %>
           <% if entry.viral? %>
             <%= link_to "📈 Virality Stats", fetch_virality_path(entry), class: "btn btn-accent", target: "_blank" %>

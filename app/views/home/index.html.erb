@@ -14,7 +14,7 @@
     <% if logged_in? %>
       <%= link_to "Go to Dashboard", dash_path, class: "btn" %>
     <% else %>
-      <%= link_to "Sign in with Hack Club", "/auth/hack_club", class: "btn" %>
+      <%= button_to "Sign in with Hack Club", "/auth/hack_club", method: :post, class: "btn", form_class: "auth-form" %>
     <% end %>
   </div>
 </div>
