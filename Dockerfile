@@ -45,9 +45,9 @@ RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
-# Install node modules
-COPY package.json package-lock.json ./
-RUN npm ci
+# Install node modules (use npm install to handle lock file mismatches)
+COPY package.json package-lock.json* ./
+RUN npm install --legacy-peer-deps
 
 # Copy application code
 COPY . .
