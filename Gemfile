@@ -25,7 +25,6 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
 gem "solid_cache"
-gem "solid_queue"
 gem "solid_cable"
 gem "mission_control-jobs"
 
@@ -74,7 +73,6 @@ gem "omniauth-oauth2"
 gem "omniauth-rails_csrf_protection"
 gem "rack-attack"
 gem "blazer"
-gem 'console1984'
-gem 'audits1984'
 gem 'faraday-net_http_persistent', '~> 2.0'
 gem "vite_rails", "~> 3.0"
+gem "solid_queue"

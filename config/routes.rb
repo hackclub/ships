@@ -26,7 +26,7 @@ Rails.application.routes.draw do
     delete "/admin/stop_impersonating", to: "admin#stop_impersonating", as: :admin_stop_impersonating
     mount Flipper::UI.app(Flipper) => "/flipper"
     mount Blazer::Engine => "/blazer"
-    mount Audits1984::Engine => "/console"
+    mount Audits1984::Engine => "/console" if defined?(Audits1984)
     mount MissionControl::Jobs::Engine, at: "/jobs"
   end
 

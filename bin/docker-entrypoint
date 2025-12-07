@@ -6,32 +6,37 @@ if [ -z "${LD_PRELOAD+x}" ]; then
     export LD_PRELOAD
 fi
 
-# If running the rails server then create or migrate existing database
-if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  echo "Waiting for database to be ready..."
-  
-  MAX_RETRIES=30
-  RETRY_COUNT=0
-  
-  # Wait for database to accept connections
-  until ./bin/rails runner "ActiveRecord::Base.connection" 2>/dev/null; do
-    RETRY_COUNT=$((RETRY_COUNT + 1))
-    if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
-      echo "Failed to connect to database after $MAX_RETRIES attempts"
-      exit 1
-    fi
-    echo "Database not ready, retrying in 2 seconds... ($RETRY_COUNT/$MAX_RETRIES)"
-    sleep 2
-  done
-  
-  echo "Running migrations..."
-  ./bin/rails db:prepare
-  ./bin/rails db:migrate
-  ./bin/rails db:migrate:cache 2>/dev/null || true
-  ./bin/rails db:migrate:queue 2>/dev/null || true
-  ./bin/rails db:migrate:cable 2>/dev/null || true
-  
-  echo "Database ready!"
-fi
+# Always run database setup when starting the server
+echo "Waiting for database to be ready..."
+
+MAX_RETRIES=30
+RETRY_COUNT=0
+
+# Wait for database to accept connections
+until ./bin/rails runner "ActiveRecord::Base.connection" 2>/dev/null; do
+  RETRY_COUNT=$((RETRY_COUNT + 1))
+  if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+    echo "Failed to connect to database after $MAX_RETRIES attempts"
+    exit 1
+  fi
+  echo "Database not ready, retrying in 2 seconds... ($RETRY_COUNT/$MAX_RETRIES)"
+  sleep 2
+done
+
+echo "Running database migrations..."
+./bin/rails db:prepare
+
+echo "Loading Solid Cache/Queue/Cable schemas..."
+./bin/rails runner "
+  %w[cache_schema queue_schema cable_schema].each do |schema|
+    schema_file = Rails.root.join('db', \"#{schema}.rb\")
+    if File.exist?(schema_file)
+      puts \"Loading #{schema}...\"
+      load schema_file
+    end
+  end
+" 2>/dev/null || true
+
+echo "Database ready!"
 
 exec "${@}"
