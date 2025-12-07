@@ -37,9 +37,7 @@ services:
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
       RAILS_HOST: ${RAILS_HOST:-localhost}
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-      DB_HOST: db
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
+      DATABASE_URL: postgres://postgres:postgres@db:5432/ships_production
       REDIS_URL: redis://redis:6379/0
     depends_on:
       db:
@@ -59,9 +57,7 @@ services:
       RAILS_ENV: production
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-      DB_HOST: db
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
+      DATABASE_URL: postgres://postgres:postgres@db:5432/ships_production
       REDIS_URL: redis://redis:6379/0
     depends_on:
       db:
