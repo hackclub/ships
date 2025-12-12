@@ -27,5 +27,9 @@
     <%= link_to "/jobs", class: "btn btn-outline btn-info justify-start gap-3" do %>
       <span>📋</span> Jobs Queue
     <% end %>
+
+    <%= button_to admin_trigger_sync_path, method: :post, class: "btn btn-outline btn-success justify-start gap-3", data: { turbo_confirm: "Queue Airtable sync job?" } do %>
+      <span>🔄</span> Sync from Airtable
+    <% end %>
   </div>
 </main>

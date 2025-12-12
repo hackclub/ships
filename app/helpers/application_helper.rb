@@ -14,4 +14,23 @@ module ApplicationHelper
   rescue URI::InvalidURIError
     nil
   end
+
+  # Returns a cached screenshot URL for an entry, using local Active Storage.
+  # Falls back to the original URL if not yet cached.
+  #
+  # @param entry [YswsProjectEntry] The project entry.
+  # @return [String, nil] The cached or original screenshot URL.
+  def cached_screenshot_url(entry)
+    return nil if entry.screenshot_url.blank?
+
+    cached = CachedImage.find_by(airtable_id: entry.airtable_id)
+
+    if cached&.image&.attached? && !cached.expired?
+      rails_blob_path(cached.image, only_path: true)
+    else
+      # Queue caching job and return original URL as fallback
+      CacheImageJob.perform_later(entry.airtable_id, entry.screenshot_url)
+      entry.screenshot_url
+    end
+  end
 end

@@ -14,6 +14,11 @@
         <% end %>
       <% end %>
       <%= card_body do %>
+        <% if (screenshot = cached_screenshot_url(entry)) %>
+          <div class="card-screenshot">
+            <%= image_tag screenshot, alt: "#{entry.name || entry.ysws} screenshot", loading: "lazy" %>
+          </div>
+        <% end %>
         <p class="card-description"><%= truncate(entry.description, length: 150) %></p>
         <div class="card-meta">
           <% if entry.hours_spent.present? %>

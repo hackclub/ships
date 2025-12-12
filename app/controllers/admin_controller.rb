@@ -46,6 +46,12 @@ class AdminController < ApplicationController
     redirect_to admin_path, notice: "Stopped impersonating"
   end
 
+  # Triggers the Airtable sync job manually.
+  def trigger_sync
+    AirtableJob.perform_later
+    redirect_to admin_path, notice: "Airtable sync job queued successfully"
+  end
+
   private
 
   # Ensures the user is an admin before accessing admin pages.
