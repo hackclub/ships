@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_06_033032) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_12_043322) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -183,6 +183,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_06_033032) do
     t.string "display_name_from_slack"
     t.string "first_name"
     t.string "last_name"
+    t.string "api_key"
+    t.index ["api_key"], name: "index_users_on_api_key", unique: true
   end
 
   create_table "ysws_project_entries", force: :cascade do |t|

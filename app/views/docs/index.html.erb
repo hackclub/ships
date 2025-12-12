@@ -12,12 +12,24 @@
   </div>
 
   <% if logged_in? %>
+    <div class="api-key-helper">
+      <p>🔑 Use your API key for authenticated endpoints. Add it to the <code>Authorization</code> header:</p>
+      <code class="api-key-example">Authorization: Bearer YOUR_API_KEY</code>
+      <div class="api-key-actions">
+        <button class="copy-api-key-btn" id="copy-api-key-btn" data-api-key="<%= current_user.api_key %>">
+          📋 Copy API Key
+        </button>
+        <%= button_to "🔄 Regenerate API Key", regenerate_api_key_path, method: :post, class: "regenerate-api-key-btn", data: { turbo_confirm: "This will invalidate your current API key. Continue?" } %>
+        <span class="copy-feedback" id="copy-feedback"></span>
+      </div>
+    </div>
+
     <div class="cookie-helper">
-      <p>🍪 Want to use the authenticated API endpoints? Click below to copy your cookie header!</p>
+      <p>🍪 Alternatively, you can still use cookies for API access (for browser-based testing).</p>
       <button class="copy-cookie-btn" id="copy-cookie-btn" data-cookie="<%= request.headers['Cookie'] %>">
         📋 Copy Cookie Header
       </button>
-      <span class="copy-feedback" id="copy-feedback"></span>
+      <span class="copy-feedback" id="copy-feedback-cookie"></span>
     </div>
   <% end %>
 

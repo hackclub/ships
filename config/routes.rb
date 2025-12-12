@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   get "/dash", to: "dashboard#index", as: :dash
   get "/stats", to: "stats#index", as: :stats
   get "/docs", to: "docs#index", as: :docs
+  post "/regenerate_api_key", to: "docs#regenerate_api_key", as: :regenerate_api_key
   post "/entries/:id/fetch_stars", to: "ysws_entries#fetch_stars", as: :fetch_stars
   get "/entries/:id/virality", to: "ysws_entries#fetch_virality", as: :fetch_virality
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
