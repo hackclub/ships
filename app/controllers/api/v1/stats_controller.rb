@@ -30,12 +30,12 @@ module Api
               .where.not(github_stars: nil)
               .order(github_stars: :desc)
               .limit(10)
-              .map { |e| { ysws: e.ysws, code_url: e.code_url, stars: e.github_stars } },
+              .map { |e| { name: e.name, ysws: e.ysws, code_url: e.code_url, stars: e.github_stars } },
             recent_projects: entries
               .where.not(approved_at: nil)
               .order(approved_at: :desc)
               .limit(10)
-              .map { |e| { ysws: e.ysws, approved_at: e.approved_at&.iso8601 } }
+              .map { |e| { name: e.name, ysws: e.ysws, code_url: e.code_url, approved_at: e.approved_at&.iso8601 } }
           }
         end
 

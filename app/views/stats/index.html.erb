@@ -33,9 +33,9 @@
           <% @top_starred.each do |entry| %>
             <div class="list-item">
               <% if entry.code_url.present? %>
-                <a href="<%= entry.code_url %>" target="_blank" class="list-name list-link"><%= entry.ysws || "Untitled" %></a>
+                <a href="<%= entry.code_url %>" target="_blank" class="list-name list-link"><%= entry.name || entry.ysws || "Untitled" %></a>
               <% else %>
-                <span class="list-name"><%= entry.ysws || "Untitled" %></span>
+                <span class="list-name"><%= entry.name || entry.ysws || "Untitled" %></span>
               <% end %>
               <span class="list-value">⭐ <%= entry.github_stars %></span>
             </div>
@@ -84,7 +84,11 @@
         <div class="list-section">
           <% @recent_projects.each do |entry| %>
             <div class="list-item">
-              <span class="list-name"><%= entry.ysws || "Untitled" %></span>
+              <% if entry.code_url.present? %>
+                <a href="<%= entry.code_url %>" target="_blank" class="list-name list-link"><%= entry.name || entry.ysws || "Untitled" %></a>
+              <% else %>
+                <span class="list-name"><%= entry.name || entry.ysws || "Untitled" %></span>
+              <% end %>
               <span class="list-value"><%= time_ago_in_words(entry.approved_at) %> ago</span>
             </div>
           <% end %>
