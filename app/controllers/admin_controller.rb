@@ -45,7 +45,7 @@ class AdminController < ApplicationController
 
   # Triggers the Airtable sync job manually.
   def trigger_sync
-    AirtableJob.perform_later
+    AirtableJob.perform_now
     redirect_to admin_path, notice: "Airtable sync job queued successfully"
   end
 
