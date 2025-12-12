@@ -39,6 +39,9 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # Incoming webhooks (from external services like Airtable)
+  post "/webhooks/airtable", to: "webhooks#airtable"
+
   # API routes
   namespace :api do
     namespace :v1 do
@@ -47,6 +50,7 @@ Rails.application.routes.draw do
       resources :cached_images, only: [ :show ]
       resources :stats, only: [ :index ]
       resources :dashboard, only: [ :index ]
+      resources :webhook_subscriptions, only: [ :index, :show, :create, :update, :destroy ]
 
       namespace :admin do
         get "users", to: "admin#users"

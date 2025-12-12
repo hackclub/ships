@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  event_type: MyString
+  url: MyString
+  active: false
+  slack_dm: false
+
+two:
+  user: two
+  event_type: MyString
+  url: MyString
+  active: false
+  slack_dm: false
