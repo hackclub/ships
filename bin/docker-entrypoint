@@ -26,17 +26,6 @@ done
 echo "Running database migrations..."
 ./bin/rails db:prepare
 
-echo "Loading Solid Cache/Queue/Cable schemas..."
-./bin/rails runner "
-  %w[cache_schema queue_schema cable_schema].each do |schema|
-    schema_file = Rails.root.join('db', \"#{schema}.rb\")
-    if File.exist?(schema_file)
-      puts \"Loading #{schema}...\"
-      load schema_file
-    end
-  end
-" 2>/dev/null || true
-
 echo "Database ready!"
 
 exec "${@}"
