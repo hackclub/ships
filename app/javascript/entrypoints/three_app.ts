@@ -583,6 +583,20 @@ async function buildScene() {
 
         if (selectedPosition) {
             const cp = new THREE.Vector3(0, 0, 2).lerp(s2.position, scrollPos);
+            
+            // Prevent camera from going inside terrain during zoom animation
+            // Terrain can extend up to ~1.5 from center (with planetAmplitude=1.5)
+            // Use a curved minimum distance that's highest in the middle of the zoom
+            const minSurfaceDistance = 1.15; // Above highest mountains
+            const zoomCurve = Math.sin(scrollPos * Math.PI); // Peaks at scrollPos=0.5
+            const minDistance = 1.0 + (minSurfaceDistance - 1.0) * zoomCurve * 0.5;
+            
+            const distFromCenter = cp.length();
+            if (distFromCenter < minDistance) {
+                // Push camera outward to stay above terrain
+                cp.normalize().multiplyScalar(minDistance);
+            }
+            
             camera.position.copy(cp);
 
             camera.quaternion.slerpQuaternions(
