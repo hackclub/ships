@@ -9,8 +9,8 @@
   <div class="card bg-base-200 mb-6">
     <div class="card-body">
       <h2 class="card-title text-lg">Impersonate by Email</h2>
-      <p class="text-sm text-base-content/70 mb-3">Enter any email to view the dashboard as that user (creates user if not found).</p>
-      <%= form_with url: admin_impersonate_by_email_path, method: :post, class: "flex gap-2" do |f| %>
+      <p class="text-sm text-base-content/70 mb-3">Enter any email to view the dashboard as that user. Creates a user record if they don't exist yet.</p>
+      <%= form_with url: admin_impersonate_by_email_path, method: :post, class: "flex gap-2", data: { turbo: false } do |f| %>
         <%= f.email_field :email, placeholder: "user@example.com", class: "input input-bordered flex-1", required: true %>
         <%= f.submit "View as Email", class: "btn btn-warning" %>
       <% end %>
@@ -38,7 +38,7 @@
               <% end %>
             </td>
             <td>
-              <%= button_to "View as #{user.display_name}", admin_impersonate_path(user), method: :post, class: "btn btn-sm btn-outline btn-secondary" %>
+              <%= button_to "View as #{user.display_name}", admin_impersonate_path(user), method: :post, class: "btn btn-sm btn-outline btn-secondary", data: { turbo: false } %>
             </td>
           </tr>
         <% end %>

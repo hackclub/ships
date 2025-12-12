@@ -13,19 +13,21 @@ Rails.application.routes.draw do
   get "/auth/failure", to: "sessions#failure"
   delete "/logout", to: "sessions#destroy"
 
-  # Admin-only routes
+  # Admin-only routes (controller has before_action :require_admin)
+  get "/admin", to: "admin#index", as: :admin
+  get "/admin/users", to: "admin#users", as: :admin_users
+  post "/admin/impersonate/:id", to: "admin#impersonate", as: :admin_impersonate
+  post "/admin/impersonate_by_email", to: "admin#impersonate_by_email", as: :admin_impersonate_by_email
+  delete "/admin/stop_impersonating", to: "admin#stop_impersonating", as: :admin_stop_impersonating
+  post "/admin/trigger_sync", to: "admin#trigger_sync", as: :admin_trigger_sync
+
+  # Mounted engines need route constraint for admin check
   admin_constraint = ->(request) {
     user_id = request.session[:user_id]
     user_id && User.find_by(id: user_id)&.admin?
   }
 
   constraints admin_constraint do
-    get "/admin", to: "admin#index", as: :admin
-    get "/admin/users", to: "admin#users", as: :admin_users
-    post "/admin/impersonate/:id", to: "admin#impersonate", as: :admin_impersonate
-    post "/admin/impersonate_by_email", to: "admin#impersonate_by_email", as: :admin_impersonate_by_email
-    delete "/admin/stop_impersonating", to: "admin#stop_impersonating", as: :admin_stop_impersonating
-    post "/admin/trigger_sync", to: "admin#trigger_sync", as: :admin_trigger_sync
     mount Flipper::UI.app(Flipper) => "/flipper"
     mount Blazer::Engine => "/blazer"
     mount Audits1984::Engine => "/console" if defined?(Audits1984)

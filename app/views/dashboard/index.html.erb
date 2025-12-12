@@ -22,7 +22,7 @@
         <p class="card-description"><%= truncate(entry.description, length: 150) %></p>
         <div class="card-meta">
           <% if entry.hours_spent.present? %>
-            <span class="meta-item">⏱️ <%= entry.hours_spent %> hrs</span>
+            <span class="meta-item">⏱️ <%= entry.hours_spent.to_f.round %> hrs</span>
           <% end %>
           <% if entry.country.present? %>
             <span class="meta-item">📍 <%= entry.country %></span>

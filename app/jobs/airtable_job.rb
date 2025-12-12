@@ -46,7 +46,7 @@ class AirtableJob < ApplicationJob
     end
 
     Rails.logger.info "[AirtableJob] Fetched #{all_records.size} records from Airtable"
-    
+
     all_records.each_slice(BATCH_SIZE) do |batch|
       batch_count += 1
       Rails.logger.info "[AirtableJob] Processing batch #{batch_count} (#{batch.size} records)"
@@ -80,6 +80,9 @@ class AirtableJob < ApplicationJob
 
     # Record successful run time for slow mode check
     Rails.cache.write(CACHE_KEY, Time.current)
+
+    # Check for newly viral projects and notify users
+    ViralNotificationJob.perform_later
 
     Rails.logger.info "[AirtableJob] Sync complete. Created: #{created}, Updated: #{updated}, Failed: #{failed}"
   end

@@ -18,7 +18,7 @@ class AdminController < ApplicationController
     redirect_to dash_path, notice: "Now viewing as #{user.display_name}"
   end
 
-  # Impersonates by email (user must already exist for security).
+  # Impersonates by email (creates user if not found).
   def impersonate_by_email
     email = params[:email].to_s.strip.downcase
     if email.blank?
@@ -26,17 +26,14 @@ class AdminController < ApplicationController
       return
     end
 
-    # SECURITY: Only allow impersonation of existing users to prevent
-    # accidental user record creation and potential abuse.
-    user = User.find_by(email: email)
-    unless user
-      redirect_to admin_users_path, alert: "User not found: #{email}"
-      return
+    # Find or create user for impersonation
+    user = User.find_or_create_by(email: email) do |u|
+      u.provider = "impersonation"
+      u.uid = SecureRandom.uuid
     end
 
     Rails.logger.info "[ADMIN] #{real_current_user.email} started impersonating #{user.email}"
     session[:impersonated_user_id] = user.id
-    session.delete(:impersonated_email)
     redirect_to dash_path, notice: "Now viewing as #{email}"
   end
 

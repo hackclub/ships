@@ -10,12 +10,11 @@ from fellow testers:
 - [x] optomize speeds
 - [x] on docs page dont turbo redirect (turbo is casuing a js error)
 - [x] dupe countries, top projects (should go away after name)
-- [ ]  improve caching
+- [x]  improve caching
   from me:
--  [ ] add webhook slack dm option
-- [ ] api webhook maybe for on new entry
-- [ ] airtable webhook to server setup
-- [ ] expolode?
+-  [x] add webhook slack dm option
+- [x] ~~api webhook maybe for on new entry~~ use slack dm
+- [ ] airtable webhook to server setup (will do after approval)
 - [ ] write up of why we use what for max
 
 additional fixes from this session:

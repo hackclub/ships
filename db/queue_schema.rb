@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_12_052849) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_12_202320) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -221,6 +221,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_12_052849) do
     t.string "heard_through"
     t.string "screenshot_url"
     t.integer "github_stars"
+    t.boolean "viral_notified", default: false, null: false
     t.index ["airtable_id"], name: "index_ysws_project_entries_on_airtable_id", unique: true
     t.index ["approved_at"], name: "index_ysws_project_entries_on_approved_at"
     t.index ["country"], name: "index_ysws_project_entries_on_country"
