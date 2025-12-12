@@ -92,13 +92,17 @@ function updateImageContainer(containerId: string, imageUrl: string | null) {
     }
 }
 
+// Cache expiry time in milliseconds (1 hour)
+const CACHE_EXPIRY_MS = 60 * 60 * 1000;
+
 async function loadShips() {
     loadingProgressDisplay.textContent = "Loading ships";
 
-    const cachedShips: string | null = await localforage.getItem("ships");
-    if (cachedShips) {
+    // Check cache with expiry
+    const cachedData = await localforage.getItem("ships_cache") as { data: string; timestamp: number } | null;
+    if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_EXPIRY_MS) {
         loadingLine.style.strokeDashoffset = "0px";
-        return JSON.parse(cachedShips);
+        return JSON.parse(cachedData.data);
     }
 
     const url = "/api/v1/ysws_entries";
@@ -127,7 +131,10 @@ async function loadShips() {
     const utf8decoder = new TextDecoder("utf-8");
     const decodedText = utf8decoder.decode(new Uint8Array(values));
 
-    await localforage.setItem("ships", decodedText);
+    // Store with timestamp for cache expiry
+    await localforage.setItem("ships_cache", { data: decodedText, timestamp: Date.now() });
+    // Clean up old cache key if it exists
+    await localforage.removeItem("ships");
 
     return JSON.parse(decodedText);
 }
@@ -480,18 +487,26 @@ async function buildScene() {
             const objects = pickHelper.pick(pickPosition, scene, camera);
 
             const object = objects.find((o) => o.object.userData.isPlanet);
+            
+            // Only process interactions when actually hovering over the planet (click-through fix)
+            if (!object) {
+                selectedShipIndex = null;
+                lineMesh.visible = false;
+            }
+            
             const p = object?.point || new THREE.Vector3();
             s.position.copy(p);
             s2.position.copy(p);
 
-            if (ships) {
+            if (ships && object) {
                 const nearestShip = findNearestShip(
                     planet.clone().worldToLocal(p.clone()),
                     ships,
                     shipCount,
                 );
                 if (nearestShip?.position) {
-                    if (clicked) {
+                    // Only zoom when clicking on the actual planet surface
+                    if (clicked && object) {
                         zoomingInToShipStartTime = performance.now();
                     }
 
@@ -576,6 +591,14 @@ async function buildScene() {
 
         if (selectedPosition) {
             const cp = new THREE.Vector3(0, 0, 2).lerp(s2.position, scrollPos);
+            
+            // Prevent camera from going inside the planet (phase through land fix)
+            const distFromCenter = cp.length();
+            const minDistance = 1.05; // Just above planet surface
+            if (distFromCenter < minDistance) {
+                cp.normalize().multiplyScalar(minDistance);
+            }
+            
             camera.position.copy(cp);
 
             camera.quaternion.slerpQuaternions(
