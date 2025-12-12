@@ -130,11 +130,8 @@ class AirtableJob < ApplicationJob
       hours_spent_actual: fields["Override Hours Spent"],
       archived_demo: fields["Archive - Live URL"],
       archived_repo: fields["Archive - Code URL"],
-      map_lat: fields["Geocoded - Latitude"],
-      map_long: fields["Geocoded - Longitude"],
       country: fields["Country"],
       github_username: fields["GitHub Username"],
-      heard_through: fields["Heard Through"],
       github_stars: fields["Repo - Star Count"]&.to_i,
       screenshot_url: screenshot_url
     }

@@ -26,11 +26,9 @@ CSV.foreach(CSV_PATH, headers: true) do |row|
     hours_spent_actual: raw["Override Hours Spent"] || raw["hours"],
     archived_demo: raw["Archive - Live URL"],
     archived_repo: raw["Archive - Code URL"],
-    map_lat: raw["Geocoded - Latitude"],
-    map_long: raw["Geocoded - Longitude"],
+
     country: raw["Country"] || raw["country"],
     github_username: raw["GitHub Username"] || raw["github_username"],
-    heard_through: raw["Heard Through"] || raw["heard_through"]
   }
 
   # Convert empty strings and newline-only strings to nil
