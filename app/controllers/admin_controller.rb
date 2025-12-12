@@ -49,6 +49,18 @@ class AdminController < ApplicationController
     redirect_to admin_path, notice: "Airtable sync job queued successfully"
   end
 
+  # Clears the Rails cache.
+  def clear_cache
+    Rails.cache.clear
+    redirect_to admin_path, notice: "Cache cleared successfully"
+  end
+
+  # Re-fetches screenshot URLs from Airtable.
+  def refresh_screenshots
+    FetchScreenshotsJob.perform_later
+    redirect_to admin_path, notice: "Screenshot refresh job queued"
+  end
+
   private
 
   # Ensures the user is an admin before accessing admin pages.

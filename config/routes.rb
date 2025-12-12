@@ -20,6 +20,8 @@ Rails.application.routes.draw do
   post "/admin/impersonate_by_email", to: "admin#impersonate_by_email", as: :admin_impersonate_by_email
   delete "/admin/stop_impersonating", to: "admin#stop_impersonating", as: :admin_stop_impersonating
   post "/admin/trigger_sync", to: "admin#trigger_sync", as: :admin_trigger_sync
+  post "/admin/clear_cache", to: "admin#clear_cache", as: :admin_clear_cache
+  post "/admin/refresh_screenshots", to: "admin#refresh_screenshots", as: :admin_refresh_screenshots
 
   # Mounted engines need route constraint for admin check
   admin_constraint = ->(request) {
@@ -51,6 +53,7 @@ Rails.application.routes.draw do
       resources :ysws_entries, only: [ :index ]
       resources :me, only: [ :index ]
       resources :cached_images, only: [ :show ]
+      resources :screenshots, only: [ :show ]
       resources :stats, only: [ :index ]
       resources :dashboard, only: [ :index ]
       resources :webhook_subscriptions, only: [ :index, :show, :create, :update, :destroy ]

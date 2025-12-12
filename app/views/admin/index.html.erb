@@ -31,5 +31,13 @@
     <%= button_to admin_trigger_sync_path, method: :post, class: "btn btn-outline btn-success justify-start gap-3", data: { turbo_confirm: "Queue Airtable sync job?" } do %>
       <span>🔄</span> Sync from Airtable
     <% end %>
+
+    <%= button_to admin_clear_cache_path, method: :post, class: "btn btn-outline btn-error justify-start gap-3", data: { turbo_confirm: "Clear Rails cache?" } do %>
+      <span>🗑️</span> Clear Cache
+    <% end %>
+
+    <%= button_to admin_refresh_screenshots_path, method: :post, class: "btn btn-outline btn-warning justify-start gap-3", data: { turbo_confirm: "Refresh all screenshot URLs from Airtable?" } do %>
+      <span>🖼️</span> Refresh Screenshots
+    <% end %>
   </div>
 </main>

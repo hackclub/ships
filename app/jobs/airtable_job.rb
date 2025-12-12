@@ -78,6 +78,11 @@ class AirtableJob < ApplicationJob
     # Invalidate cache after sync
     Rails.cache.delete("api/v1/ysws_entries")
 
+    # Queue image caching for entries with screenshots
+    YswsProjectEntry.where.not(screenshot_url: [ nil, "" ]).find_each do |entry|
+      CacheImageJob.perform_later(entry.airtable_id, entry.screenshot_url)
+    end
+
     # Record successful run time for slow mode check
     Rails.cache.write(CACHE_KEY, Time.current)
 

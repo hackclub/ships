@@ -15,22 +15,13 @@ module ApplicationHelper
     nil
   end
 
-  # Returns a cached screenshot URL for an entry, using local Active Storage.
-  # Falls back to the original URL if not yet cached.
+  # Returns the screenshot URL for an entry via the live Airtable endpoint.
   #
   # @param entry [YswsProjectEntry] The project entry.
-  # @return [String, nil] The cached or original screenshot URL.
+  # @return [String, nil] The screenshot endpoint URL.
   def cached_screenshot_url(entry)
-    return nil if entry.screenshot_url.blank?
+    return nil if entry.airtable_id.blank?
 
-    cached = CachedImage.find_by(airtable_id: entry.airtable_id)
-
-    if cached&.image&.attached? && !cached.expired?
-      rails_blob_path(cached.image, only_path: true)
-    else
-      # Queue caching job and return original URL as fallback
-      CacheImageJob.perform_later(entry.airtable_id, entry.screenshot_url)
-      entry.screenshot_url
-    end
+    "/api/v1/screenshots/#{entry.airtable_id}"
   end
 end
