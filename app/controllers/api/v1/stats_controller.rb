@@ -10,7 +10,7 @@ module Api
         stats = Rails.cache.fetch("api/v1/stats", expires_in: 5.minutes) do
           {
             total_projects: entries.count,
-            total_hours: entries.sum(:hours_spent).to_f.round(1),
+            total_hours: entries.sum(:hours_spent).to_f.round,
             total_stars: entries.sum(:github_stars).to_i,
             viral_projects: entries.where("github_stars > 5").count,
             projects_by_country: entries
