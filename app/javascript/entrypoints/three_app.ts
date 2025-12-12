@@ -42,7 +42,12 @@ window.addEventListener("wheel", (e) => {
 });
 
 let clicked = false;
-window.addEventListener("mousedown", () => (clicked = true));
+window.addEventListener("mousedown", (e) => {
+    // Ignore clicks on UI elements (details panel, auth overlay, etc.)
+    const target = e.target as HTMLElement;
+    if (target.closest('#details') || target.closest('#auth-overlay')) return;
+    clicked = true;
+});
 window.addEventListener("mouseup", () => (clicked = false));
 
 // Cache for fetched image URLs to avoid repeated API calls
@@ -254,7 +259,8 @@ async function buildScene() {
         );
         detailedShipShadow.rotateX(Utils.rad(-90));
 
-        detailedShip = new THREE.Mesh(shipGeometry, shipMaterial);
+        const detailedShipMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+        detailedShip = new THREE.Mesh(shipGeometry, detailedShipMaterial);
         detailedShip.add(detailedShipShadow);
 
         planet.add(detailedShip);
@@ -582,20 +588,28 @@ async function buildScene() {
         }
 
         if (selectedPosition) {
-            const cp = new THREE.Vector3(0, 0, 2).lerp(s2.position, scrollPos);
+            // Use spherical interpolation for camera path to avoid phasing through terrain
+            // Start position: (0, 0, 2), End position: s2.position
+            const startPos = new THREE.Vector3(0, 0, 2);
+            const endPos = s2.position.clone();
             
-            // Prevent camera from going inside terrain during zoom animation
-            // Terrain can extend up to ~1.5 from center (with planetAmplitude=1.5)
-            // Use a curved minimum distance that's highest in the middle of the zoom
-            const minSurfaceDistance = 1.15; // Above highest mountains
-            const zoomCurve = Math.sin(scrollPos * Math.PI); // Peaks at scrollPos=0.5
-            const minDistance = 1.0 + (minSurfaceDistance - 1.0) * zoomCurve * 0.5;
+            // Get directions and distances
+            const startDir = startPos.clone().normalize();
+            const endDir = endPos.clone().normalize();
+            const startDist = startPos.length();
+            const endDist = endPos.length();
             
-            const distFromCenter = cp.length();
-            if (distFromCenter < minDistance) {
-                // Push camera outward to stay above terrain
-                cp.normalize().multiplyScalar(minDistance);
-            }
+            // Spherically interpolate the direction (arc on unit sphere)
+            const slerpDir = startDir.clone().lerp(endDir, scrollPos).normalize();
+            
+            // Linearly interpolate the distance, but add an arc bump to stay above terrain
+            // The bump peaks mid-zoom to lift camera over mountains
+            const arcBump = Math.sin(scrollPos * Math.PI) * 0.4;
+            const baseDist = Utils.lerp(startDist, endDist, scrollPos);
+            const finalDist = baseDist + arcBump;
+            
+            // Combine direction and distance
+            const cp = slerpDir.multiplyScalar(finalDist);
             
             camera.position.copy(cp);
 
@@ -673,6 +687,10 @@ ${imageHtml}
                     detailedShip.position.copy(dummy.position);
                     detailedShip.rotation.copy(dummy.rotation);
                     detailedShip.scale.copy(dummy.scale);
+                    
+                    // Match the color of the selected ship (green for recent, white otherwise)
+                    const shipColor = getShipColor(shipsData[i], i);
+                    (detailedShip.material as THREE.MeshPhongMaterial).color.copy(shipColor);
 
                     dummy.scale.setScalar(0.000000001);
                 }

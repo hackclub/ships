@@ -9,7 +9,7 @@ module Api
 
         entries = Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
           scope = YswsProjectEntry.where.not(ysws: "Boba Drops")
-          scope = scope.where("approved_at >= ?", 1.year.ago) unless params[:all] == "true"
+          scope = scope.where("approved_at >= ?",  6.months.ago) unless params[:all] == "true"
 
           scope.map do |entry|
             {
@@ -23,7 +23,8 @@ module Api
               github_username: entry.github_username || "null",
               heard_through: entry.heard_through || "null",
               hours: (entry.hours_spent_actual || entry.hours_spent)&.to_f&.round || "null",
-              screenshot_url: entry.screenshot_url || "null"
+              screenshot_url: entry.screenshot_url || "null",
+              github_stars: entry.github_stars || 0
             }
           end
         end

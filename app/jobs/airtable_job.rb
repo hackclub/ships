@@ -131,7 +131,8 @@ class AirtableJob < ApplicationJob
       map_long: fields["Geocoded - Longitude"],
       country: fields["Country"],
       github_username: fields["GitHub Username"],
-      heard_through: fields["Heard Through"]
+      heard_through: fields["Heard Through"],
+      github_stars: fields["Repo - Star Count"]&.to_i
       # screenshot_url: screenshot_url
     }
 

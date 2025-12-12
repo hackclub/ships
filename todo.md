@@ -16,3 +16,4 @@ from fellow testers:
 - [ ] api webhook maybe for on new entry
 - [ ] airtable webhook to server setup
 - [ ] expolode?
+- [ ] write up of why we use what for max

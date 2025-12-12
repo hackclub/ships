@@ -1,4 +1,6 @@
 class YswsProjectEntry < ApplicationRecord
+  include CountryNormalizer
+
   has_encrypted :map_lat
   has_encrypted :map_long
 
@@ -19,28 +21,6 @@ class YswsProjectEntry < ApplicationRecord
 
     match = code_url.match(%r{github\.com/[^/]+/([^/?#]+)})
     match ? match[1].gsub(/\.git$/, "") : nil
-  end
-
-  # Fetches and caches the star count from GitHub API.
-  #
-  # @return [Integer, nil] The star count or nil if fetch fails.
-  def fetch_github_stars!
-    repo_path = github_repo_path
-    return nil unless repo_path
-
-    response = Faraday.get("https://api.github.com/repos/#{repo_path}") do |req|
-      req.headers["Accept"] = "application/vnd.github.v3+json"
-      req.headers["User-Agent"] = "Ships-App"
-    end
-
-    return nil unless response.success?
-
-    data = JSON.parse(response.body)
-    stars = data["stargazers_count"]
-    update_column(:github_stars, stars)
-    stars
-  rescue Faraday::Error, JSON::ParserError
-    nil
   end
 
   # Checks if the project has more than 5 stars.

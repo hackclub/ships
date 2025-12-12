@@ -76,11 +76,7 @@ module Api
               .sort_by { |_, v| -v }
               .to_h,
             by_country: YswsProjectEntry
-              .where.not(country: [ nil, "" ])
-              .group(:country)
-              .count
-              .sort_by { |_, v| -v }
-              .to_h,
+              .group_by_normalized_country(YswsProjectEntry.all),
             recent_users: User.order(created_at: :desc).limit(10).map do |u|
               { email: u.email, created_at: u.created_at&.iso8601 }
             end

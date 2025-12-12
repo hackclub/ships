@@ -10,11 +10,8 @@ class StatsController < ApplicationController
         total_hours: entries.sum(:hours_spent).to_f.round,
         total_stars: entries.sum(:github_stars).to_i,
         viral_projects: entries.where("github_stars > 5").count,
-        projects_by_country: entries
-          .where.not(country: [ nil, "" ])
-          .group(:country)
-          .count
-          .sort_by { |_, v| -v }
+        projects_by_country: YswsProjectEntry
+          .group_by_normalized_country(entries)
           .first(15)
           .to_h,
         projects_by_ysws: entries
