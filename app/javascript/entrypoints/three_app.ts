@@ -487,26 +487,18 @@ async function buildScene() {
             const objects = pickHelper.pick(pickPosition, scene, camera);
 
             const object = objects.find((o) => o.object.userData.isPlanet);
-            
-            // Only process interactions when actually hovering over the planet (click-through fix)
-            if (!object) {
-                selectedShipIndex = null;
-                lineMesh.visible = false;
-            }
-            
             const p = object?.point || new THREE.Vector3();
             s.position.copy(p);
             s2.position.copy(p);
 
-            if (ships && object) {
+            if (ships) {
                 const nearestShip = findNearestShip(
                     planet.clone().worldToLocal(p.clone()),
                     ships,
                     shipCount,
                 );
-                if (nearestShip?.position) {
-                    // Only zoom when clicking on the actual planet surface
-                    if (clicked && object) {
+                if (nearestShip?.position && object) {
+                    if (clicked) {
                         zoomingInToShipStartTime = performance.now();
                     }
 
@@ -591,15 +583,6 @@ async function buildScene() {
 
         if (selectedPosition) {
             const cp = new THREE.Vector3(0, 0, 2).lerp(s2.position, scrollPos);
-            
-            // Prevent camera from going inside the planet (phase through land fix)
-            // Only clamp when fully zoomed in to avoid interfering with zoom animation
-            const distFromCenter = cp.length();
-            const minDistance = 1.02; // Just above planet surface
-            if (scrollPos > 0.95 && distFromCenter < minDistance) {
-                cp.normalize().multiplyScalar(minDistance);
-            }
-            
             camera.position.copy(cp);
 
             camera.quaternion.slerpQuaternions(
