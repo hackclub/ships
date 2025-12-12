@@ -593,9 +593,10 @@ async function buildScene() {
             const cp = new THREE.Vector3(0, 0, 2).lerp(s2.position, scrollPos);
             
             // Prevent camera from going inside the planet (phase through land fix)
+            // Only clamp when fully zoomed in to avoid interfering with zoom animation
             const distFromCenter = cp.length();
-            const minDistance = 1.05; // Just above planet surface
-            if (distFromCenter < minDistance) {
+            const minDistance = 1.02; // Just above planet surface
+            if (scrollPos > 0.95 && distFromCenter < minDistance) {
                 cp.normalize().multiplyScalar(minDistance);
             }
             
@@ -629,9 +630,19 @@ async function buildScene() {
                 }
             }
 
+            // Extract project name from code_url if available
+            let projectName = si.ysws;
+            if (si.code_url && si.code_url !== 'null') {
+                const match = si.code_url.match(/github\.com\/[^/]+\/([^/?#]+)/);
+                if (match) {
+                    projectName = match[1].replace(/\.git$/, '');
+                }
+            }
+
             document.getElementById("details")!.innerHTML = `
 ${imageHtml}
-<span style="font-size: 1.2em; font-weight: bold;">${si.ysws}</span>
+<span style="font-size: 1.2em; font-weight: bold;">${projectName}</span>
+<span style="font-size: 0.8em; color: #888;"> (${si.ysws})</span>
 <br />
 <span>${si.description ? si.description.slice(0, 100) + (si.description.length > 100 ? '...' : '') : ''}</span>
 <br />
