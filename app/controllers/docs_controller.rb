@@ -1,7 +1,15 @@
 class DocsController < ApplicationController
+  before_action :require_login, only: [ :regenerate_api_key ]
+
   # Displays API documentation.
   def index
     @endpoints = build_endpoints
+  end
+
+  # Regenerates the current user's API key.
+  def regenerate_api_key
+    current_user.regenerate_api_key!
+    redirect_to docs_path, notice: "API key regenerated successfully."
   end
 
   private

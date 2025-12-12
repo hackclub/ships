@@ -108,6 +108,68 @@
     margin-bottom: 1rem;
   }
 
+  .api-key-helper {
+    background: linear-gradient(135deg, #2a4a3e 0%, #1a3a2e 100%);
+    border: 1px solid #3a6a4e;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .api-key-helper p {
+    margin: 0 0 0.75rem 0;
+    color: #ddd;
+  }
+
+  .api-key-example {
+    display: block;
+    background: #1a1a2e;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    color: #a5b4fc;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .api-key-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .copy-api-key-btn {
+    background: #22c55e;
+    color: #fff;
+    border: none;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+
+  .copy-api-key-btn:hover {
+    background: #16a34a;
+  }
+
+  .regenerate-api-key-btn {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+
+  .regenerate-api-key-btn:hover {
+    background: #dc2626;
+  }
+
   .cookie-helper {
     background: linear-gradient(135deg, #3a3a5e 0%, #2a2a4e 100%);
     border: 1px solid #4a4a6e;
@@ -319,9 +381,29 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // API key copy button
+    const apiKeyBtn = document.getElementById('copy-api-key-btn');
+    const apiKeyFeedback = document.getElementById('copy-feedback');
+
+    if (apiKeyBtn) {
+      apiKeyBtn.addEventListener('click', function() {
+        const apiKey = this.dataset.apiKey;
+
+        navigator.clipboard.writeText(apiKey).then(function() {
+          apiKeyFeedback.textContent = '✓ Copied!';
+          setTimeout(function() {
+            apiKeyFeedback.textContent = '';
+          }, 2000);
+        }).catch(function() {
+          apiKeyFeedback.textContent = '✗ Failed to copy';
+          apiKeyFeedback.style.color = '#f87171';
+        });
+      });
+    }
+
     // Cookie header copy button
     const cookieBtn = document.getElementById('copy-cookie-btn');
-    const cookieFeedback = document.getElementById('copy-feedback');
+    const cookieFeedback = document.getElementById('copy-feedback-cookie');
 
     if (cookieBtn) {
       cookieBtn.addEventListener('click', function() {
@@ -345,13 +427,13 @@
       btn.addEventListener('click', function() {
         const url = this.dataset.url;
         const auth = this.dataset.auth;
-        const cookie = this.dataset.cookie;
+        const apiKey = document.getElementById('copy-api-key-btn')?.dataset.apiKey;
         const feedback = this.nextElementSibling.nextElementSibling;
 
         let curlCmd = 'curl "' + url + '"';
         
-        if ((auth === 'true' || auth === 'admin') && cookie) {
-          curlCmd += ' \\\n  -H "Cookie: ' + cookie + '"';
+        if ((auth === 'true' || auth === 'admin') && apiKey) {
+          curlCmd += ' \\\n  -H "Authorization: Bearer ' + apiKey + '"';
         }
 
         navigator.clipboard.writeText(curlCmd).then(function() {
