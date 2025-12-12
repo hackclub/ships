@@ -380,7 +380,8 @@
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  // Use turbo:load for Turbo compatibility (fires on both initial load and Turbo navigation)
+  document.addEventListener('turbo:load', function() {
     // API key copy button
     const apiKeyBtn = document.getElementById('copy-api-key-btn');
     const apiKeyFeedback = document.getElementById('copy-feedback');

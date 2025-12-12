@@ -36,6 +36,14 @@
   font-weight: 600;
 }
 
+.card-subtitle {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #888;
+  margin-top: 0.25rem;
+}
+
 .card-body {
   padding: 1.5rem;
 }

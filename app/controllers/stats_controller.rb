@@ -2,7 +2,7 @@ class StatsController < ApplicationController
   # Displays global statistics for all YSWS project entries.
   # Uses fragment caching for expensive aggregations.
   def index
-    stats = Rails.cache.fetch("stats/index", expires_in: 5.minutes) do
+    stats = Rails.cache.fetch("stats/index", expires_in: 15.minutes) do
       entries = YswsProjectEntry.all
 
       {

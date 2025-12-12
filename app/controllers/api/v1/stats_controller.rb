@@ -7,7 +7,7 @@ module Api
       def index
         entries = YswsProjectEntry.all
 
-        stats = Rails.cache.fetch("api/v1/stats", expires_in: 5.minutes) do
+        stats = Rails.cache.fetch("api/v1/stats", expires_in: 15.minutes) do
           {
             total_projects: entries.count,
             total_hours: entries.sum(:hours_spent).to_f.round,
@@ -36,6 +36,7 @@ module Api
           }
         end
 
+        expires_in 15.minutes, public: true
         render json: stats
       end
     end

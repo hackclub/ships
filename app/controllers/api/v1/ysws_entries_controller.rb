@@ -2,14 +2,19 @@ module Api
   module V1
     class YswsEntriesController < ApplicationController
       # GET /api/v1/ysws_entries
-      # Returns YSWS project entries from the last year as JSON, cached for 5 minutes.
+      # Returns YSWS project entries from the last 6 months as JSON, cached for 10 minutes.
       # Use ?all=true to get all entries (slower).
       def index
         cache_key = params[:all] == "true" ? "api/v1/ysws_entries/all" : "api/v1/ysws_entries"
 
-        entries = Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
-          scope = YswsProjectEntry.where.not(ysws: "Boba Drops")
-          scope = scope.where("approved_at >= ?",  6.months.ago) unless params[:all] == "true"
+        entries = Rails.cache.fetch(cache_key, expires_in: 10.minutes) do
+          scope = YswsProjectEntry
+            .where.not(ysws: "Boba Drops")
+            .select(:airtable_id, :ysws, :approved_at, :code_url, :country, :playable_url,
+                    :description, :github_username, :heard_through, :hours_spent,
+                    :hours_spent_actual, :screenshot_url, :github_stars)
+
+          scope = scope.where("approved_at >= ?", 6.months.ago) unless params[:all] == "true"
 
           scope.map do |entry|
             {
@@ -29,6 +34,8 @@ module Api
           end
         end
 
+        # Set HTTP caching headers for CDN/browser caching
+        expires_in 10.minutes, public: true
         render json: entries
       end
     end

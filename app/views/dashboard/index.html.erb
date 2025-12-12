@@ -8,7 +8,10 @@
   <% @users_entries.each do |entry| %>
     <%= card do %>
       <%= card_header do %>
-        <%= card_title entry.ysws || "Project" %>
+        <%= card_title entry.name || entry.ysws || "Project" %>
+        <% if entry.name && entry.ysws %>
+          <span class="card-subtitle"><%= entry.ysws %></span>
+        <% end %>
       <% end %>
       <%= card_body do %>
         <p class="card-description"><%= truncate(entry.description, length: 150) %></p>
