@@ -11,11 +11,15 @@ class YswsProjectEntry < ApplicationRecord
     match = code_url.match(%r{github\.com/([^/]+/[^/]+)})
     match ? match[1].gsub(/\.git$/, "") : nil
   end
-def name
-  return unless code_url
-  m = code_url.match(%r{github\.com/([^/]+)})
-  m && m[1]
-end
+  # Extracts the repository name from the GitHub URL.
+  #
+  # @return [String, nil] The repository name or nil if not a valid GitHub URL.
+  def name
+    return nil unless code_url.present?
+
+    match = code_url.match(%r{github\.com/[^/]+/([^/?#]+)})
+    match ? match[1].gsub(/\.git$/, "") : nil
+  end
 
   # Fetches and caches the star count from GitHub API.
   #
