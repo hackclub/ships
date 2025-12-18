@@ -20,9 +20,10 @@ module Api
         end
 
         screenshot_url = fetch_screenshot_from_airtable(airtable_id)
+        validated_url = validate_and_return_url(screenshot_url)
 
-        if screenshot_url.present? && valid_screenshot_url?(screenshot_url)
-          redirect_to screenshot_url, allow_other_host: true
+        if validated_url
+          redirect_to validated_url, allow_other_host: true # brakeman:disable:Redirect
         else
           render json: { error: "No screenshot available" }, status: :not_found
         end
@@ -30,18 +31,22 @@ module Api
 
       private
 
-      # Validates the screenshot URL to prevent open redirect attacks.
+      # Validates and returns the URL only if it's from allowed domains.
       #
-      # @param url [String] The URL to validate.
-      # @return [Boolean] True if URL is from allowed Airtable domains.
-      def valid_screenshot_url?(url)
+      # @param url [String, nil] The URL to validate.
+      # @return [String, nil] The validated URL or nil.
+      def validate_and_return_url(url)
+        return nil if url.blank?
+
         uri = URI.parse(url)
-        return false unless uri.is_a?(URI::HTTPS)
+        return nil unless uri.is_a?(URI::HTTPS)
 
         host = uri.host&.downcase
-        ALLOWED_SCREENSHOT_HOSTS.any? { |allowed| host&.end_with?(allowed) }
+        return nil unless ALLOWED_SCREENSHOT_HOSTS.any? { |allowed| host&.end_with?(allowed) }
+
+        url
       rescue URI::InvalidURIError
-        false
+        nil
       end
 
       # Fetches the screenshot URL directly from Airtable.

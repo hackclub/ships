@@ -60,13 +60,14 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+  # SQLite for test environment
+  gem "sqlite3"
 end
 
 gem "flipper", "~> 1.3"
 gem "flipper-ui", "~> 1.3"
 gem "flipper-active_record", "~> 1.3"
 gem "lockbox", "~> 2.1"
-gem "norairrecord"
 gem "omniauth"
 gem "omniauth_openid_connect"
 gem "omniauth-oauth2"
