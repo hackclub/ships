@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "==> Running RuboCop..."
+bundle exec rubocop "$@"
+
+echo "==> Running Brakeman..."
+bundle exec brakeman --no-pager -q
+
+echo "==> All checks passed!"

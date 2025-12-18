@@ -73,6 +73,6 @@ gem "omniauth-oauth2"
 gem "omniauth-rails_csrf_protection"
 gem "rack-attack"
 gem "blazer"
-gem 'faraday-net_http_persistent', '~> 2.0'
+gem "faraday-net_http_persistent", "~> 2.0"
 gem "vite_rails", "~> 3.0"
 gem "solid_queue"

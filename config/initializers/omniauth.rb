@@ -6,7 +6,7 @@ OmniAuth.config.silence_get_warning = true
 
 # Log failures for debugging.
 OmniAuth.config.on_failure = Proc.new do |env|
-  message = env['omniauth.error.type']
+  message = env["omniauth.error.type"]
   Rails.logger.error "[OmniAuth] Failure: #{message} - #{env['omniauth.error']&.message}"
   OmniAuth::FailureEndpoint.new(env).redirect_to_failure
 end

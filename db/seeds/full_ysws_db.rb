@@ -28,7 +28,7 @@ CSV.foreach(CSV_PATH, headers: true) do |row|
     archived_repo: raw["Archive - Code URL"],
 
     country: raw["Country"] || raw["country"],
-    github_username: raw["GitHub Username"] || raw["github_username"],
+    github_username: raw["GitHub Username"] || raw["github_username"]
   }
 
   # Convert empty strings and newline-only strings to nil
