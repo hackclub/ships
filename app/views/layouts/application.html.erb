@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html data-theme="<%= controller_name == 'admin' ? 'dark' : 'light' %>">
+  <head>
+    <title><%= content_for(:title) || "Ships" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= javascript_importmap_tags %>
+    <%= vite_client_tag %>
+    <%= vite_stylesheet_tag 'application', "data-turbo-track": "reload" %>
+    <%= vite_javascript_tag 'application' %>
+    <!--
+      If using a TypeScript entrypoint file:
+        vite_typescript_tag 'application'
+
+      If using a .jsx or .tsx entrypoint, add the extension:
+        vite_javascript_tag 'application.jsx'
+
+      Visit the guide for more information: https://vite-ruby.netlify.app/guide/rails
+    -->
+
+  </head>
+
+  <body>
+    <% if impersonating? %>
+      <div class="impersonate-banner">
+        <span style="margin-left: 5rem;">👤 Viewing as <strong><%= current_user.display_name %></strong></span>
+        <%= button_to "Stop Impersonating", admin_stop_impersonating_path, method: :delete, class: "btn btn-xs btn-ghost" %>
+      </div>
+    <% end %>
+    <%= yield %>
+  </body>
+</html>

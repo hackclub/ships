@@ -1,0 +1,68 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  primary:
+    <<: *default
+    database: ships_development
+    username: <%= ENV.fetch("DB_USERNAME", "postgres") %>
+    password: <%= ENV.fetch("DB_PASSWORD", "postgres") %>
+    host: <%= ENV.fetch("DB_HOST", "localhost") %>
+  cache:
+    <<: *default
+    database: ships_development
+    username: <%= ENV.fetch("DB_USERNAME", "postgres") %>
+    password: <%= ENV.fetch("DB_PASSWORD", "postgres") %>
+    host: <%= ENV.fetch("DB_HOST", "localhost") %>
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *default
+    database: ships_development
+    username: <%= ENV.fetch("DB_USERNAME", "postgres") %>
+    password: <%= ENV.fetch("DB_PASSWORD", "postgres") %>
+    host: <%= ENV.fetch("DB_HOST", "localhost") %>
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *default
+    database: ships_development
+    username: <%= ENV.fetch("DB_USERNAME", "postgres") %>
+    password: <%= ENV.fetch("DB_PASSWORD", "postgres") %>
+    host: <%= ENV.fetch("DB_HOST", "localhost") %>
+    migrations_paths: db/cable_migrate
+
+test:
+  primary:
+    adapter: sqlite3
+    database: db/test.sqlite3
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  cache:
+    adapter: sqlite3
+    database: db/test_cache.sqlite3
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+    migrations_paths: db/cache_migrate
+  queue:
+    adapter: sqlite3
+    database: db/test_queue.sqlite3
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+    migrations_paths: db/queue_migrate
+  cable:
+    adapter: sqlite3
+    database: db/test_cable.sqlite3
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+    migrations_paths: db/cable_migrate
+
+production:
+  primary: &production_primary
+    <<: *default
+    url: <%= ENV["DATABASE_URL"] %>
+  cache:
+    <<: *production_primary
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *production_primary
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *production_primary
+    migrations_paths: db/cable_migrate

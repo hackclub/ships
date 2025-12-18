@@ -1,0 +1,48 @@
+<%= render "shared/sidebar" %>
+
+<main class="main-content bg-base-100 text-base-content" data-theme="dark">
+  <div class="flex items-center justify-between mb-6">
+    <h1>Impersonate User</h1>
+    <%= link_to "← Back to Admin", admin_path, class: "btn btn-ghost btn-sm" %>
+  </div>
+
+  <div class="card bg-base-200 mb-6">
+    <div class="card-body">
+      <h2 class="card-title text-lg">Impersonate by Email</h2>
+      <p class="text-sm text-base-content/70 mb-3">Enter any email to view the dashboard as that user. Creates a user record if they don't exist yet.</p>
+      <%= form_with url: admin_impersonate_by_email_path, method: :post, class: "flex gap-2", data: { turbo: false } do |f| %>
+        <%= f.email_field :email, placeholder: "user@example.com", class: "input input-bordered flex-1", required: true %>
+        <%= f.submit "View as Email", class: "btn btn-warning" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="table table-zebra w-full">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Name</th>
+          <th>Admin</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr>
+            <td><%= user.email %></td>
+            <td><%= user.display_name %></td>
+            <td>
+              <% if user.admin? %>
+                <span class="badge badge-primary">Admin</span>
+              <% end %>
+            </td>
+            <td>
+              <%= button_to "View as #{user.display_name}", admin_impersonate_path(user), method: :post, class: "btn btn-sm btn-outline btn-secondary", data: { turbo: false } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</main>

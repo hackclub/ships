@@ -1,0 +1,28 @@
+data_sources:
+  main:
+    url: <%= ENV["DATABASE_URL"] %>
+
+    # Timeout in seconds for long-running queries
+    timeout: 120
+
+    # Caching settings
+    cache:
+      mode: slow
+      expires_in: 60
+
+    # Enables smart variables (auto-complete for variables)
+    smart_variables:
+      user_id: "SELECT id, email FROM users ORDER BY email"
+
+    # Audit logging of queries
+    audit: true
+
+# URL for linked variables
+# linked_columns:
+#   user_id: "/admin/users/{value}"
+
+# Check for anomalies every hour
+# anomaly_checks: true
+
+# Enable forecasting
+# forecasting: true

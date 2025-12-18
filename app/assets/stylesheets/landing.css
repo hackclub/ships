@@ -1,0 +1,123 @@
+body {
+    margin: 0;
+    font-family: -apple-system;
+}
+
+body:has(#app) {
+    overflow: hidden;
+}
+
+#app {
+    #controls {
+        position: absolute;
+        right: 0;
+        display: flex;
+        align-items: flex-end;
+        flex-direction: column;
+        gap: 0.5em;
+        z-index: 2;
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 1ch;
+            color: white;
+        }
+    }
+
+    canvas {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+}
+
+#details {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: white;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    z-index: 10;
+    pointer-events: auto;
+    max-width: 400px;
+}
+
+#details a {
+    color: #6eb5ff;
+    text-decoration: none;
+}
+
+#details a:hover {
+    text-decoration: underline;
+}
+
+.ship-image-container {
+    margin-bottom: 0.75rem;
+}
+
+.ship-image {
+    max-width: 100%;
+    max-height: 150px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.ship-image-loading {
+    color: #888;
+    font-size: 0.875rem;
+}
+
+#details:empty {
+    display: none;
+}
+
+#auth-overlay {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 10;
+}
+
+#auth-overlay .btn {
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s;
+}
+
+#auth-overlay .btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+#cover {
+    position: absolute;
+    inset: 0;
+    background: #000022;
+    display: flex;
+    color: white;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3em;
+
+    z-index: 1;
+}
+
+svg {
+    width: 20rem;
+    height: fit-content;
+
+    &#line {
+        width: 25rem;
+    }
+}

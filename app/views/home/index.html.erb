@@ -1,0 +1,22 @@
+<div id="app">
+  <canvas></canvas>
+
+  <div id="cover">
+    <p id="loading-progress">Loading…</p>
+    <svg>
+      <line id="line" />
+    </svg>
+  </div>
+
+  <div id="details"></div>
+
+  <div id="auth-overlay">
+    <% if logged_in? %>
+      <%= link_to "Go to Dashboard", dash_path, class: "btn" %>
+    <% else %>
+      <%= link_to "Sign in with Hack Club", "/auth/hack_club", class: "btn", data: { turbo: false } %>
+    <% end %>
+  </div>
+</div>
+
+<%= vite_typescript_tag "three_app" %>

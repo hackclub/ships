@@ -1,0 +1,31 @@
+#!/bin/bash -e
+
+# Enable jemalloc for reduced memory usage and latency.
+if [ -z "${LD_PRELOAD+x}" ]; then
+    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
+    export LD_PRELOAD
+fi
+
+# Always run database setup when starting the server
+echo "Waiting for database to be ready..."
+
+MAX_RETRIES=30
+RETRY_COUNT=0
+
+# Wait for database to accept connections
+until ./bin/rails runner "ActiveRecord::Base.connection" 2>/dev/null; do
+  RETRY_COUNT=$((RETRY_COUNT + 1))
+  if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+    echo "Failed to connect to database after $MAX_RETRIES attempts"
+    exit 1
+  fi
+  echo "Database not ready, retrying in 2 seconds... ($RETRY_COUNT/$MAX_RETRIES)"
+  sleep 2
+done
+
+echo "Running database migrations..."
+./bin/rails db:prepare
+
+echo "Database ready!"
+
+exec "${@}"

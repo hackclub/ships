@@ -1,0 +1,56 @@
+<%= render "shared/sidebar" %>
+
+<main class="main-content">
+  <h1>Dashboard</h1>
+  <p>Welcome, <%= current_user.display_name %>!</p>
+  <br />
+  <div class="card-grid">
+  <% @users_entries.each do |entry| %>
+    <%= card do %>
+      <%= card_header do %>
+        <%= card_title entry.name || entry.ysws || "Project" %>
+        <% if entry.name && entry.ysws %>
+          <span class="card-subtitle"><%= entry.ysws %></span>
+        <% end %>
+      <% end %>
+      <%= card_body do %>
+        <% if (screenshot = cached_screenshot_url(entry)) %>
+          <div class="card-screenshot">
+            <%= image_tag screenshot, alt: "#{entry.name || entry.ysws} screenshot", loading: "lazy" %>
+          </div>
+        <% end %>
+        <p class="card-description"><%= truncate(entry.description, length: 150) %></p>
+        <div class="card-meta">
+          <% if entry.hours_spent.present? %>
+            <span class="meta-item">⏱️ <%= entry.hours_spent.to_f.round %> hrs</span>
+          <% end %>
+          <% if entry.country.present? %>
+            <span class="meta-item">📍 <%= entry.country %></span>
+          <% end %>
+          <% if entry.approved_at.present? %>
+            <span class="meta-item status-approved">✅ Approved</span>
+          <% else %>
+            <span class="meta-item status-pending">⏳ Pending</span>
+          <% end %>
+        </div>
+      <% end %>
+      <%= card_footer do %>
+        <div class="card-actions">
+          <% if (demo = safe_external_url(entry.playable_url) || safe_external_url(entry.demo_url)) %>
+            <%= link_to "🌐 Demo", demo, class: "btn btn-primary", target: "_blank", rel: "noopener noreferrer" %>
+          <% end %>
+          <% if (code = safe_external_url(entry.code_url)) %>
+            <%= link_to "💻 Code", code, class: "btn btn-secondary", target: "_blank", rel: "noopener noreferrer" %>
+          <% end %>
+          <% if entry.viral? %>
+            <%= link_to "📈 Virality Stats", fetch_virality_path(entry), class: "btn btn-accent", target: "_blank" %>
+          <% end %>
+          <% if entry.github_stars.present? %>
+            <span class="meta-item">⭐ <%= entry.github_stars %> stars</span>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+  </div>
+</main>

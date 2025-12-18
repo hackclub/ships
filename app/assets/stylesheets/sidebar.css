@@ -1,0 +1,149 @@
+.impersonate-banner {
+  background: #d97706;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.impersonate-banner button {
+  background: rgba(0, 0, 0, 0.2);
+  border: none;
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.impersonate-banner button:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 4rem;
+  background: #1a1a2e;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  color: #e0e0e0;
+  text-decoration: none;
+  border-radius: 0.375rem;
+  transition: background 0.2s;
+}
+
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-link svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.sidebar-link-text {
+  display: none;
+}
+
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.sidebar-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.sidebar-btn-text {
+  display: none;
+}
+
+.sidebar-btn-logout {
+  background: #e53935;
+  color: white;
+}
+
+.sidebar-btn-logout:hover {
+  background: #c62828;
+}
+
+.sidebar-btn-admin {
+  background: transparent;
+  color: #e0e0e0;
+  opacity: 0.3;
+  border: 2px solid #f97316;
+}
+
+.sidebar-btn-admin:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.main-content {
+  margin-left: 4rem;
+  min-height: 100vh;
+  padding: 4rem;
+  background: #1d1d2b;
+  color: #e5e5e5;
+}
+
+.main-content[data-theme="dark"] {
+  --b1: 0.2 0 0;
+  --b2: 0.18 0 0;
+  --b3: 0.15 0 0;
+  --bc: 0.9 0 0;
+  --p: 0.65 0.2 260;
+  --pc: 0.98 0 0;
+  --s: 0.7 0.15 310;
+  --sc: 0.98 0 0;
+  --a: 0.75 0.18 180;
+  --ac: 0.15 0 0;
+  --n: 0.25 0.02 260;
+  --nc: 0.9 0 0;
+  background: #1d1d2b;
+  color: #e5e5e5;
+}
+
+.main-content h1 {
+  font-size: 1.875rem;
+  font-weight: bold;
+  /* margin: 0; */
+}
+
+.main-content p {
+  margin-top: 1rem;
+}

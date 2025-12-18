@@ -1,0 +1,43 @@
+<%= render "shared/sidebar" %>
+
+<main class="main-content bg-base-100 text-base-content" data-theme="dark">
+  <h1>Admin Dashboard</h1>
+  <p class="text-base-content/70 mb-6">Quick links to admin tools.</p>
+
+  <div class="flex flex-col gap-3 max-w-md">
+    <div class="dropdown dropdown-bottom w-full">
+      <div tabindex="0" role="button" class="btn btn-outline btn-warning justify-start gap-3 w-full">
+        <span>👤</span> Impersonate User
+        <span class="ml-auto">▼</span>
+      </div>
+      <ul tabindex="0" class="dropdown-content menu bg-base-200 rounded-box z-10 w-full p-2 shadow-lg max-h-60 overflow-y-auto">
+        <li><%= link_to "Browse All Users", admin_users_path %></li>
+      </ul>
+    </div>
+
+    <%= link_to "/flipper", class: "btn btn-outline btn-primary justify-start gap-3" do %>
+      <span>🎛️</span> Feature Flags (Flipper)
+    <% end %>
+    <%= link_to "/blazer", class: "btn btn-outline btn-secondary justify-start gap-3" do %>
+      <span>📊</span> Blazer
+    <% end %>
+    <%= link_to "/console", class: "btn btn-outline btn-accent justify-start gap-3" do %>
+      <span>🔍</span> Console Audits
+    <% end %>
+    <%= link_to "/jobs", class: "btn btn-outline btn-info justify-start gap-3" do %>
+      <span>📋</span> Jobs Queue
+    <% end %>
+
+    <%= button_to admin_trigger_sync_path, method: :post, class: "btn btn-outline btn-success justify-start gap-3", data: { turbo_confirm: "Queue Airtable sync job?" } do %>
+      <span>🔄</span> Sync from Airtable
+    <% end %>
+
+    <%= button_to admin_clear_cache_path, method: :post, class: "btn btn-outline btn-error justify-start gap-3", data: { turbo_confirm: "Clear Rails cache?" } do %>
+      <span>🗑️</span> Clear Cache
+    <% end %>
+
+    <%= button_to admin_refresh_screenshots_path, method: :post, class: "btn btn-outline btn-warning justify-start gap-3", data: { turbo_confirm: "Refresh all screenshot URLs from Airtable?" } do %>
+      <span>🖼️</span> Refresh Screenshots
+    <% end %>
+  </div>
+</main>
