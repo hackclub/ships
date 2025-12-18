@@ -55,44 +55,27 @@ class YswsEntriesController < ApplicationController
   # @param entry [YswsProjectEntry] The project entry.
   # @return [Hash] Hash containing mentions and total engagement.
   def fetch_mentions_from_airtable(entry)
-    api_key = Rails.application.credentials.dig(:airtable, :api_key)
-    base_id = Rails.application.credentials.dig(:airtable, :base_id)
+    # Fetch all mentions from YSWS Project Mentions table
+    all_mentions = HackclubAirtable.records("YSWS Project Mentions")
 
-    table = Norairrecord.table(api_key, base_id, "Approved Projects")
-    record = table.find(entry.airtable_id)
-    search_ids = record.fields["YSWS Project Mentions - Searches"] || []
-
-    return { mentions: [], total_engagement: 0, fetched_at: Time.current } if search_ids.empty?
-
-    searches_table = Norairrecord.table(api_key, base_id, "YSWS Project Mentions")
-    mentions_table = Norairrecord.table(api_key, base_id, "YSWS Project Mention Searches")
-
-    # Collect all mention IDs first to batch fetch
-    all_mention_ids = []
-    search_ids.each do |search_id|
-      search_record = searches_table.find(search_id)
-      all_mention_ids.concat(search_record.fields["Found Project Mentions"] || [])
-    rescue => e
-      Rails.logger.error "[YswsEntriesController] Failed to fetch search #{search_id}: #{e.message}"
+    # Filter mentions that belong to this project
+    found_mentions = all_mentions.select do |mention|
+      fields = mention["fields"] || mention
+      project_ref = fields["YSWS Approved Project"]
+      project_ref.is_a?(Array) && project_ref.include?(entry.airtable_id)
     end
 
-    # Fetch all mentions (Airtable doesn't support batch get, but we cache the result)
-    found_mentions = []
-    all_mention_ids.uniq.each do |mention_id|
-      mention_record = mentions_table.find(mention_id)
-      fields = mention_record.fields.slice(
-        "Source",
-        "Date",
-        "Headline",
-        "URL",
-        "Engagement Count",
-        "Engagement Type",
-        "Mentions Hack Club?",
-        "Archive URL"
-      )
-      found_mentions << fields
-    rescue => e
-      Rails.logger.error "[YswsEntriesController] Failed to fetch mention #{mention_id}: #{e.message}"
+    # Extract relevant fields
+    found_mentions = found_mentions.map do |mention|
+      fields = mention["fields"] || mention
+      {
+        "Source" => fields["Source"],
+        "Date" => fields["Date"],
+        "Headline" => fields["Headline"],
+        "URL" => fields["URL"],
+        "Engagement Count" => fields["Engagement Count"],
+        "Engagement Type" => fields["Engagement Type"]
+      }
     end
 
     {

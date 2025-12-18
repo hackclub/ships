@@ -30,14 +30,11 @@ module Api
       # @return [String, nil] The screenshot URL or nil.
       def fetch_screenshot_from_airtable(airtable_id)
         Rails.cache.fetch("screenshot_url:#{airtable_id}", expires_in: 1.hour) do
-          table = Norairrecord.table(
-            Rails.application.credentials.dig(:airtable, :api_key),
-            Rails.application.credentials.dig(:airtable, :base_id),
-            "Approved Projects"
-          )
+          record = HackclubAirtable.find("Approved Projects", airtable_id)
+          return nil unless record
 
-          record = table.find(airtable_id)
-          screenshot = record.fields["Screenshot"]
+          fields = record["fields"] || record
+          screenshot = fields["Screenshot"]
           screenshot.is_a?(Array) && screenshot.first ? screenshot.first["url"] : nil
         rescue StandardError => e
           Rails.logger.error "[ScreenshotsController] Failed to fetch screenshot for #{airtable_id}: #{e.message}"

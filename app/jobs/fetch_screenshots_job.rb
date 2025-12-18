@@ -4,26 +4,23 @@ class FetchScreenshotsJob < ApplicationJob
   # Fetches screenshot URLs from Airtable for entries missing them.
   #
   # @param entry_ids [Array<Integer>] The IDs of entries to update.
-  def perform(entry_ids)
-    return if entry_ids.blank?
+  def perform(entry_ids = nil)
+    entries = if entry_ids.present?
+      YswsProjectEntry.where(id: entry_ids)
+    else
+      YswsProjectEntry.where(screenshot_url: [ nil, "" ])
+    end
 
-    table = Norairrecord.table(
-      Rails.application.credentials.dig(:airtable, :api_key),
-      Rails.application.credentials.dig(:airtable, :base_id),
-      "Approved Projects"
-    )
-
-    entries = YswsProjectEntry.where(id: entry_ids)
     airtable_ids = entries.pluck(:airtable_id).compact
-
     return if airtable_ids.empty?
 
     # Fetch records from Airtable by their IDs
     airtable_ids.each do |airtable_id|
-      record = table.find(airtable_id)
+      record = HackclubAirtable.find("Approved Projects", airtable_id)
       next unless record
 
-      screenshot = record.fields["Screenshot"]
+      fields = record["fields"] || record
+      screenshot = fields["Screenshot"]
       screenshot_url = screenshot.is_a?(Array) && screenshot.first ? screenshot.first["url"] : nil
 
       if screenshot_url.present?

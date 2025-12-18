@@ -20,25 +20,18 @@ class AirtableJob < ApplicationJob
 
     Rails.logger.info "[AirtableJob] Starting sync..."
 
-    table = Norairrecord.table(
-      Rails.application.credentials.dig(:airtable, :api_key),
-      Rails.application.credentials.dig(:airtable, :base_id),
-      "Approved Projects"
-    )
+    all_records = HackclubAirtable.records("Approved Projects")
 
     created = 0
     updated = 0
     failed = 0
     batch_count = 0
 
-    # Fetch all records and process in batches
-    all_records = table.records
-
     # DEV ONLY: Filter to projects from last 3 months for testing
     if Rails.env.development?
       three_months_ago = 3.months.ago
       all_records = all_records.select do |r|
-        approved_at = r.fields["Approved At"]
+        approved_at = r["fields"]&.dig("Approved At") || r["Approved At"]
         approved_at.present? && Time.parse(approved_at) >= three_months_ago
       rescue ArgumentError
         false
@@ -71,7 +64,7 @@ class AirtableJob < ApplicationJob
         end
       rescue ArgumentError => e
         failed += 1
-        Rails.logger.error "[AirtableJob] Error processing #{attrs[:airtable_id]}: #{e.message}"
+        Rails.logger.error "[AirtableJob] Error processing record: #{e.message}"
       end
     end
 
@@ -108,10 +101,11 @@ class AirtableJob < ApplicationJob
 
   # Maps an Airtable record to model attributes.
   #
-  # @param record [Norairrecord::Record] The Airtable record.
+  # @param record [Hash] The Airtable record from HackclubAirtable.
   # @return [Hash] Attributes hash for YswsProjectEntry.
   def map_record_to_attrs(record)
-    fields = record.fields
+    # Handle both nested fields format and flat format from api2
+    fields = record["fields"] || record
 
     hours = presence(fields["Override Hours Spent"]) || presence(fields["Hours Spent"])
 
@@ -124,7 +118,7 @@ class AirtableJob < ApplicationJob
     ysws_name = ysws_name.first if ysws_name.is_a?(Array)
 
     attrs = {
-      airtable_id: record.id,
+      airtable_id: record["id"] || record["airtable_id"],
       ysws: ysws_name,
       email: fields["Email"],
       approved_at: fields["Approved At"],

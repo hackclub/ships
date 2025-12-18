@@ -48,41 +48,33 @@ class ViralNotificationJob < ApplicationJob
   # @param entry [YswsProjectEntry] The project entry.
   # @return [Hash] Hash containing mentions array and total engagement.
   def fetch_mentions(entry)
-    api_key = Rails.application.credentials.dig(:airtable, :api_key)
-    base_id = Rails.application.credentials.dig(:airtable, :base_id)
+    record = HackclubAirtable.find("Approved Projects", entry.airtable_id)
+    return { mentions: [], total_engagement: 0 } unless record
 
-    table = Norairrecord.table(api_key, base_id, "Approved Projects")
-    record = table.find(entry.airtable_id)
-    search_ids = record.fields["YSWS Project Mentions - Searches"] || []
-
+    fields = record["fields"] || record
+    search_ids = fields["YSWS Project Mentions - Searches"] || []
     return { mentions: [], total_engagement: 0 } if search_ids.empty?
 
-    searches_table = Norairrecord.table(api_key, base_id, "YSWS Project Mentions")
-    mentions_table = Norairrecord.table(api_key, base_id, "YSWS Project Mention Searches")
+    # Fetch all mentions directly from YSWS Project Mentions table
+    all_mentions = HackclubAirtable.records("YSWS Project Mentions")
 
-    # Collect all mention IDs
-    all_mention_ids = []
-    search_ids.each do |search_id|
-      search_record = searches_table.find(search_id)
-      all_mention_ids.concat(search_record.fields["Found Project Mentions"] || [])
-    rescue StandardError => e
-      Rails.logger.error "[ViralNotificationJob] Failed to fetch search #{search_id}: #{e.message}"
+    # Filter mentions that belong to this project's searches
+    found_mentions = all_mentions.select do |mention|
+      mention_fields = mention["fields"] || mention
+      project_ref = mention_fields["YSWS Approved Project"]
+      project_ref.is_a?(Array) && project_ref.include?(entry.airtable_id)
     end
 
-    # Fetch all mentions
-    found_mentions = []
-    all_mention_ids.uniq.each do |mention_id|
-      mention_record = mentions_table.find(mention_id)
-      fields = mention_record.fields.slice(
-        "Source",
-        "Date",
-        "Headline",
-        "URL",
-        "Engagement Count"
-      )
-      found_mentions << fields
-    rescue StandardError => e
-      Rails.logger.error "[ViralNotificationJob] Failed to fetch mention #{mention_id}: #{e.message}"
+    # Extract relevant fields
+    found_mentions = found_mentions.map do |mention|
+      mention_fields = mention["fields"] || mention
+      {
+        "Source" => mention_fields["Source"],
+        "Date" => mention_fields["Date"],
+        "Headline" => mention_fields["Headline"],
+        "URL" => mention_fields["URL"],
+        "Engagement Count" => mention_fields["Engagement Count"]
+      }
     end
 
     {
@@ -166,4 +158,3 @@ class ViralNotificationJob < ApplicationJob
     lines.join("\n")
   end
 end
-
