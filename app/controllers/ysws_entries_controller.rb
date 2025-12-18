@@ -51,12 +51,15 @@ class YswsEntriesController < ApplicationController
   private
 
   # Fetches mentions data from Airtable.
+  # Uses a global cache for all mentions to avoid repeated full-table fetches.
   #
   # @param entry [YswsProjectEntry] The project entry.
   # @return [Hash] Hash containing mentions and total engagement.
   def fetch_mentions_from_airtable(entry)
-    # Fetch all mentions from YSWS Project Mentions table
-    all_mentions = HackclubAirtable.records("YSWS Project Mentions")
+    # Cache all mentions for 6 hours to avoid slow full-table fetches
+    all_mentions = Rails.cache.fetch("airtable:all_mentions", expires_in: 6.hours) do
+      HackclubAirtable.records("YSWS Project Mentions")
+    end
 
     # Filter mentions that belong to this project
     found_mentions = all_mentions.select do |mention|

@@ -3,6 +3,12 @@
 module Api
   module V1
     class ScreenshotsController < Api::V1::ApplicationController
+      # Allowed hosts for screenshot redirects (Airtable CDN domains).
+      ALLOWED_SCREENSHOT_HOSTS = %w[
+        v5.airtableusercontent.com
+        dl.airtable.com
+      ].freeze
+
       # GET /api/v1/screenshots/:airtable_id
       # Fetches the current screenshot URL from Airtable and redirects to it.
       def show
@@ -15,7 +21,7 @@ module Api
 
         screenshot_url = fetch_screenshot_from_airtable(airtable_id)
 
-        if screenshot_url.present?
+        if screenshot_url.present? && valid_screenshot_url?(screenshot_url)
           redirect_to screenshot_url, allow_other_host: true
         else
           render json: { error: "No screenshot available" }, status: :not_found
@@ -23,6 +29,20 @@ module Api
       end
 
       private
+
+      # Validates the screenshot URL to prevent open redirect attacks.
+      #
+      # @param url [String] The URL to validate.
+      # @return [Boolean] True if URL is from allowed Airtable domains.
+      def valid_screenshot_url?(url)
+        uri = URI.parse(url)
+        return false unless uri.is_a?(URI::HTTPS)
+
+        host = uri.host&.downcase
+        ALLOWED_SCREENSHOT_HOSTS.any? { |allowed| host&.end_with?(allowed) }
+      rescue URI::InvalidURIError
+        false
+      end
 
       # Fetches the screenshot URL directly from Airtable.
       #
