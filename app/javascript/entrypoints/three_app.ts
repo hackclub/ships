@@ -168,16 +168,23 @@ async function buildScene() {
         1000,
     );
 
+    // Detect mobile for performance optimizations
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+        || window.innerWidth < 768;
+
     const renderer = new THREE.WebGLRenderer({
         canvas,
         alpha: true,
-        antialias: true,
+        antialias: !isMobile, // Disable antialiasing on mobile
+        powerPreference: isMobile ? "low-power" : "high-performance",
     });
-    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    // Limit pixel ratio on mobile for performance
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
     renderer.setClearColor(0xffffff, 0);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    const geometry = new THREE.IcosahedronGeometry(1, 50);
+    // Lower geometry detail on mobile
+    const geometry = new THREE.IcosahedronGeometry(1, isMobile ? 30 : 50);
     // const material = new THREE.MeshBasicMaterial({ color:  });
     const material = new THREE.ShaderMaterial({
         // wireframe: true,
@@ -376,15 +383,16 @@ async function buildScene() {
         },
     );
 
+    // Fewer stars on mobile for performance
+    const starCount = isMobile ? 3_000 : 10_000;
     const poss = [];
-    for (let i = 0; i < 10_000; i++) {
+    for (let i = 0; i < starCount; i++) {
         const p = Utils.randomSpherePoint(new THREE.Vector3(), 1).multiplyScalar(
             1000,
         );
         poss.push(...p.toArray());
     }
     const posss = new Float32Array(poss);
-    console.log("generated points");
 
     //#region Stars
     var dotGeometry = new THREE.BufferGeometry();
