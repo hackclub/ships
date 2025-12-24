@@ -4,6 +4,10 @@ class YswsProjectEntry < ApplicationRecord
   has_encrypted :map_lat
   has_encrypted :map_long
 
+  has_many :elo_matches_as_winner, class_name: "EloMatch", foreign_key: :winner_project_id, dependent: :destroy
+  has_many :elo_matches_as_loser, class_name: "EloMatch", foreign_key: :loser_project_id, dependent: :destroy
+  has_many :project_ratings, foreign_key: :project_id, dependent: :destroy
+
   # Extracts owner/repo from a GitHub URL.
   #
   # @return [String, nil] The owner/repo string or nil if not a valid GitHub URL.
