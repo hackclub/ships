@@ -1,6 +1,8 @@
 class User < ApplicationRecord
   has_encrypted :access_token
   has_many :webhook_subscriptions, dependent: :destroy
+  has_many :elo_matches, dependent: :destroy
+  has_many :project_ratings, dependent: :destroy
 
   before_create :generate_api_key
 

@@ -1,0 +1,320 @@
+<%= render "shared/sidebar" %>
+
+<main class="main-content">
+  <div class="voting-header">
+    <h1>⭐ Rate This Project</h1>
+    <p>Rate projects on 3 categories: Originality, Technical, and Usability</p>
+    <div class="voting-nav">
+      <%= link_to "⚔️ Head-to-Head", vote_path, class: "btn btn-secondary" %>
+      <%= link_to "🏆 Leaderboards", vote_leaderboard_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <% if @project.nil? %>
+    <div class="voting-alert">
+      <p>No projects available to rate right now.</p>
+    </div>
+  <% else %>
+    <div class="rate-container">
+      <div class="rate-card" data-project-id="<%= @project.id %>">
+        <% if @project.screenshot_url.present? %>
+          <div class="rate-screenshot">
+            <img src="<%= @project.screenshot_url %>" alt="<%= @project.name %>" loading="lazy" />
+          </div>
+        <% end %>
+        
+        <div class="rate-card-body">
+          <h2 class="rate-card-title"><%= @project.name || @project.ysws || "Project" %></h2>
+          <% if @project.ysws && @project.name %>
+            <span class="card-subtitle"><%= @project.ysws %></span>
+          <% end %>
+          <p class="card-description"><%= @project.description %></p>
+          
+          <div class="card-meta">
+            <% if @project.github_stars.present? && @project.github_stars > 0 %>
+              <span class="meta-item">⭐ <%= @project.github_stars %> stars</span>
+            <% end %>
+            <% if @project.country.present? %>
+              <span class="meta-item">📍 <%= @project.country %></span>
+            <% end %>
+            <% if @project.hours_spent.present? %>
+              <span class="meta-item">⏱️ <%= @project.hours_spent.to_f.round %> hrs</span>
+            <% end %>
+          </div>
+
+          <div class="card-actions">
+            <% if (demo = safe_external_url(@project.playable_url)) %>
+              <%= link_to "🌐 Try Demo", demo, class: "btn btn-primary", target: "_blank", rel: "noopener noreferrer" %>
+            <% end %>
+            <% if (code = safe_external_url(@project.code_url)) %>
+              <%= link_to "💻 View Code", code, class: "btn btn-secondary", target: "_blank", rel: "noopener noreferrer" %>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="rate-card-footer">
+          <h3>Rate this project</h3>
+          <div class="rating-categories">
+            <div class="rating-category" data-category="originality">
+              <div class="category-info">
+                <span class="category-label category-label--red">🎨 Originality</span>
+                <span class="category-desc">How unique and creative is this project?</span>
+              </div>
+              <div class="star-rating">
+                <% (1..5).each do |star| %>
+                  <button type="button" class="star-btn star-btn--red <%= 'active' if @existing_rating&.originality.to_i >= star %>" data-star="<%= star %>">★</button>
+                <% end %>
+              </div>
+            </div>
+            <div class="rating-category" data-category="technical">
+              <div class="category-info">
+                <span class="category-label category-label--yellow">⚙️ Technical</span>
+                <span class="category-desc">How well-built and technically impressive?</span>
+              </div>
+              <div class="star-rating">
+                <% (1..5).each do |star| %>
+                  <button type="button" class="star-btn star-btn--yellow <%= 'active' if @existing_rating&.technical.to_i >= star %>" data-star="<%= star %>">★</button>
+                <% end %>
+              </div>
+            </div>
+            <div class="rating-category" data-category="usability">
+              <div class="category-info">
+                <span class="category-label category-label--blue">👆 Usability</span>
+                <span class="category-desc">How polished and easy to use?</span>
+              </div>
+              <div class="star-rating">
+                <% (1..5).each do |star| %>
+                  <button type="button" class="star-btn star-btn--blue <%= 'active' if @existing_rating&.usability.to_i >= star %>" data-star="<%= star %>">★</button>
+                <% end %>
+              </div>
+            </div>
+          </div>
+          
+          <button id="submit-rating" class="btn btn-primary submit-rating-btn" <%= 'disabled' unless @existing_rating %>>
+            <%= @existing_rating ? 'Update Rating' : 'Submit Rating' %>
+          </button>
+        </div>
+      </div>
+
+      <div id="rate-result" class="voting-result hidden">
+        <p>✅ Rating submitted! Loading next project...</p>
+      </div>
+
+      <div class="voting-actions">
+        <button onclick="window.location.reload()" class="btn btn-secondary">
+          🔄 Skip / Next Project
+        </button>
+      </div>
+    </div>
+  <% end %>
+</main>
+
+<style>
+.voting-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.voting-header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+.voting-header p {
+  color: #888;
+  margin-bottom: 1rem;
+}
+.voting-nav {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+.voting-alert {
+  background: rgba(234, 179, 8, 0.2);
+  color: #facc15;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+.rate-container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+.rate-card {
+  background: #1a1a2e;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+.rate-screenshot {
+  width: 100%;
+  max-height: 300px;
+  overflow: hidden;
+}
+.rate-screenshot img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+.rate-card-body {
+  padding: 1.5rem;
+}
+.rate-card-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+.rate-card-footer {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+.rate-card-footer h3 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem 0;
+}
+.rating-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.rating-category {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.category-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.category-label {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.category-desc {
+  font-size: 0.75rem;
+  color: #888;
+}
+.category-label--red { color: #f87171; }
+.category-label--yellow { color: #fbbf24; }
+.category-label--blue { color: #60a5fa; }
+.star-rating {
+  display: flex;
+  gap: 0.5rem;
+}
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.75rem;
+  color: #444;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+.star-btn:hover {
+  transform: scale(1.2);
+}
+.star-btn--red.active, .star-btn--red:hover { color: #f87171; }
+.star-btn--yellow.active, .star-btn--yellow:hover { color: #fbbf24; }
+.star-btn--blue.active, .star-btn--blue:hover { color: #60a5fa; }
+.submit-rating-btn {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+}
+.submit-rating-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.voting-result {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+.voting-result.hidden {
+  display: none;
+}
+.voting-actions {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+.card-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const card = document.querySelector('.rate-card');
+  if (!card) return;
+
+  const projectId = card.dataset.projectId;
+  const ratings = { originality: <%= @existing_rating&.originality || 0 %>, technical: <%= @existing_rating&.technical || 0 %>, usability: <%= @existing_rating&.usability || 0 %> };
+  const submitBtn = document.getElementById('submit-rating');
+
+  // Handle star clicks
+  document.querySelectorAll('.rating-category').forEach(category => {
+    const categoryName = category.dataset.category;
+    const stars = category.querySelectorAll('.star-btn');
+
+    stars.forEach((star, index) => {
+      star.addEventListener('click', () => {
+        const rating = index + 1;
+        ratings[categoryName] = rating;
+        
+        // Update star display
+        stars.forEach((s, i) => {
+          s.classList.toggle('active', i < rating);
+        });
+
+        // Enable submit button if all categories rated
+        const allRated = ratings.originality > 0 && ratings.technical > 0 && ratings.usability > 0;
+        submitBtn.disabled = !allRated;
+      });
+    });
+  });
+
+  // Handle submit
+  submitBtn.addEventListener('click', async () => {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    try {
+      const response = await fetch('/api/v1/voting/ratings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+          project_id: projectId,
+          originality: ratings.originality,
+          technical: ratings.technical,
+          usability: ratings.usability
+        })
+      });
+
+      if (response.ok) {
+        document.getElementById('rate-result').classList.remove('hidden');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to submit rating');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Rating';
+      }
+    } catch (err) {
+      alert('Network error. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Rating';
+    }
+  });
+});
+</script>

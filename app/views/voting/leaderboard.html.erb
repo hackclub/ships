@@ -1,0 +1,218 @@
+<%= render "shared/sidebar" %>
+
+<main class="main-content">
+  <div class="leaderboard-header">
+    <h1>🏆 Leaderboards</h1>
+    <p>Top projects ranked by community votes</p>
+    <div class="leaderboard-nav">
+      <%= link_to "⚔️ Head-to-Head", vote_path, class: "btn btn-secondary" %>
+      <%= link_to "⭐ Rate Projects", vote_rate_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <div class="leaderboard-grid">
+    <!-- ELO Leaderboard -->
+    <div class="leaderboard-card">
+      <div class="leaderboard-card-header">
+        <h2>⚔️ ELO Rankings</h2>
+        <span class="leaderboard-badge">Head-to-Head</span>
+      </div>
+      <p class="leaderboard-subtitle">Based on 1v1 comparisons (min <%= @min_elo_matches %> matches)</p>
+      
+      <% if @elo_leaders.empty? %>
+        <div class="leaderboard-empty">
+          <p>No projects have enough matches yet.</p>
+          <%= link_to "Start voting!", vote_path, class: "btn btn-primary" %>
+        </div>
+      <% else %>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Project</th>
+              <th>ELO</th>
+              <th>Matches</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @elo_leaders.each_with_index do |project, index| %>
+              <tr>
+                <td class="rank">
+                  <% if index == 0 %>🥇
+                  <% elsif index == 1 %>🥈
+                  <% elsif index == 2 %>🥉
+                  <% else %><%= index + 1 %>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="project-name"><%= project.name || project.ysws %></div>
+                  <% if project.ysws && project.name %>
+                    <div class="project-ysws"><%= project.ysws %></div>
+                  <% end %>
+                </td>
+                <td class="elo-score"><%= project.elo_rating.round(0) %></td>
+                <td class="match-count"><%= project.elo_matches_count %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    </div>
+
+    <!-- Rating Leaderboard -->
+    <div class="leaderboard-card">
+      <div class="leaderboard-card-header">
+        <h2>⭐ Rating Rankings</h2>
+        <span class="leaderboard-badge rating-badge">3-Category Score</span>
+      </div>
+      <p class="leaderboard-subtitle">Median of (🎨 Originality + ⚙️ Technical + 👆 Usability), min <%= @min_ratings %> ratings</p>
+      
+      <% if @rating_leaders.empty? %>
+        <div class="leaderboard-empty">
+          <p>No projects have enough ratings yet.</p>
+        </div>
+      <% else %>
+        <table class="leaderboard-table">
+          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Project</th>
+                              <th>Score</th>
+                              <th>Ratings</th>
+                            </tr>
+                          </thead>
+          <tbody>
+            <% @rating_leaders.each_with_index do |project, index| %>
+              <tr>
+                <td class="rank">
+                  <% if index == 0 %>🥇
+                  <% elsif index == 1 %>🥈
+                  <% elsif index == 2 %>🥉
+                  <% else %><%= index + 1 %>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="project-name"><%= project.name || project.ysws %></div>
+                  <% if project.ysws && project.name %>
+                    <div class="project-ysws"><%= project.ysws %></div>
+                  <% end %>
+                </td>
+                <td class="rating-score">
+                  <%= project.ratings_median&.to_f&.round(1) %>/15
+                </td>
+                <td class="rating-count"><%= project.ratings_count %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    </div>
+  </div>
+</main>
+
+<style>
+.leaderboard-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.leaderboard-header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+.leaderboard-header p {
+  color: #888;
+}
+.leaderboard-nav {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+.leaderboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+@media (max-width: 1024px) {
+  .leaderboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.leaderboard-card {
+  background: #1a1a2e;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+.leaderboard-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.leaderboard-card-header h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+.leaderboard-badge {
+  background: #6366f1;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.rating-badge {
+  background: #f59e0b;
+}
+.leaderboard-subtitle {
+  color: #666;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+.leaderboard-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #888;
+}
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.leaderboard-table th {
+  color: #888;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+.leaderboard-table tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.rank {
+  font-size: 1.25rem;
+  width: 3rem;
+}
+.project-name {
+  font-weight: 600;
+}
+.project-ysws {
+  font-size: 0.75rem;
+  color: #666;
+}
+.elo-score, .rating-score {
+  font-family: monospace;
+  font-size: 1rem;
+}
+.star {
+  color: #f59e0b;
+}
+.match-count, .rating-count {
+  color: #888;
+}
+</style>
