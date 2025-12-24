@@ -2,6 +2,9 @@ Rails.application.routes.draw do
   get "/dash", to: "dashboard#index", as: :dash
   get "/stats", to: "stats#index", as: :stats
   get "/docs", to: "docs#index", as: :docs
+  get "/vote", to: "voting#index", as: :vote
+  get "/vote/rate", to: "voting#rate", as: :vote_rate
+  get "/vote/leaderboard", to: "voting#leaderboard", as: :vote_leaderboard
   post "/regenerate_api_key", to: "docs#regenerate_api_key", as: :regenerate_api_key
   post "/entries/:id/fetch_stars", to: "ysws_entries#fetch_stars", as: :fetch_stars
   get "/entries/:id/virality", to: "ysws_entries#fetch_virality", as: :fetch_virality
@@ -62,6 +65,18 @@ Rails.application.routes.draw do
         get "users", to: "admin#users"
         get "entries", to: "admin#entries"
         get "stats", to: "admin#stats"
+      end
+
+      namespace :voting do
+        # ELO voting
+        get "elo/matchup", to: "elo#matchup"
+        post "elo/vote", to: "elo#vote"
+        get "elo/leaderboard", to: "elo#leaderboard"
+
+        # Star ratings
+        post "ratings", to: "ratings#create"
+        get "ratings/leaderboard", to: "ratings#leaderboard"
+        get "ratings/:project_id", to: "ratings#show"
       end
     end
   end

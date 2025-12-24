@@ -1,6 +1,8 @@
 class User < ApplicationRecord
   has_encrypted :access_token
   has_many :webhook_subscriptions, dependent: :destroy
+  has_many :elo_matches, dependent: :destroy
+  has_many :project_ratings, dependent: :destroy
 
   before_create :generate_api_key
 
@@ -33,8 +35,7 @@ class User < ApplicationRecord
   #
   # @return [String] The display name.
   def display_name
-    return email.split("@")[0] unless display_name_from_slack
-    display_name_from_slack
+    display_name_from_slack.presence || email&.split("@")&.first || "Anonymous"
   end
 
   private

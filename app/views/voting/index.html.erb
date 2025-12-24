@@ -1,0 +1,199 @@
+<%= render "shared/sidebar" %>
+
+<main class="main-content">
+  <div class="voting-header">
+    <h1>⚔️ Head-to-Head Voting</h1>
+    <p>Click on the project you think is better!</p>
+    <div class="voting-nav">
+      <%= link_to "⭐ Rate Projects", vote_rate_path, class: "btn btn-secondary" %>
+      <%= link_to "🏆 Leaderboards", vote_leaderboard_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <% if @projects.size < 2 %>
+    <div class="voting-alert">
+      <p>Not enough projects available to vote on right now.</p>
+    </div>
+  <% else %>
+    <div id="voting-container" class="voting-grid">
+      <% @projects.each do |project| %>
+        <div class="vote-card" data-project-id="<%= project.id %>">
+          <% if project.screenshot_url.present? %>
+            <div class="card-screenshot">
+              <img src="<%= project.screenshot_url %>" alt="<%= project.name %>" loading="lazy" />
+            </div>
+          <% end %>
+          <div class="vote-card-body">
+            <h2 class="vote-card-title"><%= project.name || project.ysws || "Project" %></h2>
+            <% if project.ysws && project.name %>
+              <span class="card-subtitle"><%= project.ysws %></span>
+            <% end %>
+            <p class="card-description"><%= truncate(project.description, length: 200) %></p>
+            <div class="card-meta">
+              <% if project.github_stars.present? && project.github_stars > 0 %>
+                <span class="meta-item">⭐ <%= project.github_stars %></span>
+              <% end %>
+              <% if project.country.present? %>
+                <span class="meta-item">📍 <%= project.country %></span>
+              <% end %>
+            </div>
+            <div class="card-actions">
+              <% if project.playable_url.present? %>
+                <%= link_to "Demo", project.playable_url, class: "btn btn-secondary", target: "_blank", onclick: "event.stopPropagation()" %>
+              <% end %>
+              <% if project.code_url.present? %>
+                <%= link_to "Code", project.code_url, class: "btn btn-secondary", target: "_blank", onclick: "event.stopPropagation()" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div id="vote-result" class="voting-result hidden">
+      <p>✅ Vote recorded! Loading next matchup...</p>
+    </div>
+
+    <div class="voting-actions">
+      <button onclick="window.location.reload()" class="btn btn-secondary">
+        🔄 Skip / Get New Matchup
+      </button>
+    </div>
+  <% end %>
+</main>
+
+<style>
+.voting-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.voting-header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+.voting-header p {
+  color: #888;
+  margin-bottom: 1rem;
+}
+.voting-nav {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+.voting-alert {
+  background: rgba(234, 179, 8, 0.2);
+  color: #facc15;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+.voting-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+@media (max-width: 900px) {
+  .voting-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.vote-card {
+  background: #1a1a2e;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+.vote-card:hover {
+  border-color: #6366f1;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
+}
+.vote-card.selected {
+  border-color: #4ade80;
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
+}
+.vote-card-body {
+  padding: 1.5rem;
+}
+.vote-card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+.card-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+.voting-result {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  margin-top: 2rem;
+}
+.voting-result.hidden {
+  display: none;
+}
+.voting-actions {
+  text-align: center;
+  margin-top: 2rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const container = document.getElementById('voting-container');
+  if (!container) return;
+
+  const cards = container.querySelectorAll('.vote-card');
+  let voting = false;
+
+  cards.forEach(card => {
+    card.addEventListener('click', async function(e) {
+      if (voting) return;
+      if (e.target.tagName === 'A') return;
+      
+      voting = true;
+      const winnerId = this.dataset.projectId;
+      const loserId = Array.from(cards)
+        .find(c => c.dataset.projectId !== winnerId)
+        .dataset.projectId;
+
+      this.classList.add('selected');
+
+      try {
+        const response = await fetch('/api/v1/voting/elo/vote', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: JSON.stringify({ winner_id: winnerId, loser_id: loserId })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          document.getElementById('vote-result').classList.remove('hidden');
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          alert(data.error || 'Failed to record vote');
+          voting = false;
+          this.classList.remove('selected');
+        }
+      } catch (err) {
+        alert('Network error. Please try again.');
+        voting = false;
+        this.classList.remove('selected');
+      }
+    });
+  });
+});
+</script>
