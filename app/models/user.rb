@@ -35,7 +35,7 @@ class User < ApplicationRecord
   #
   # @return [String] The display name.
   def display_name
-    display_name_from_slack.presence || email&.split("@")&.first || "Anonymous"
+    display_name_from_slack.presence || email&.split("@")&.first || "Idk"
   end
 
   private
