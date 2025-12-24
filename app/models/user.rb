@@ -33,8 +33,7 @@ class User < ApplicationRecord
   #
   # @return [String] The display name.
   def display_name
-    return email.split("@")[0] unless display_name_from_slack
-    display_name_from_slack
+    display_name_from_slack.presence || email&.split("@")&.first || "Idk"
   end
 
   private

@@ -5,7 +5,9 @@ class FetchSlackDisplayNamesJob < ApplicationJob
 
   # Prevents duplicate jobs from running concurrently.
   def self.perform_later(*args)
-    return if SolidQueue::Job.where(class_name: name, finished_at: nil).exists?
+    return if SolidQueue::Job.table_exists? && SolidQueue::Job.where(class_name: name, finished_at: nil).exists?
+    super
+  rescue ActiveRecord::StatementInvalid
     super
   end
 

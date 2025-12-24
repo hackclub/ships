@@ -57,9 +57,31 @@ class SessionsController < ApplicationController
 
     # Fetch Slack display name if missing
     if user.slack_id.present? && user.display_name_from_slack.blank?
-      FetchSlackDisplayNamesJob.perform_later
+      fetch_and_update_display_name(user)
     end
 
     user
+  end
+
+  # Fetches the Slack display name for a single user and updates the record.
+  #
+  # @param user [User] The user to update.
+  def fetch_and_update_display_name(user)
+    slack_token = Rails.application.credentials.dig(:slack, :bot_token)
+    return unless slack_token.present?
+
+    response = Faraday.get("https://slack.com/api/users.info") do |req|
+      req.headers["Authorization"] = "Bearer #{slack_token}"
+      req.params["user"] = user.slack_id
+    end
+
+    data = JSON.parse(response.body)
+    return unless data["ok"]
+
+    profile = data.dig("user", "profile") || {}
+    display_name = profile["display_name"].presence || profile["real_name"].presence
+    user.update_column(:display_name_from_slack, display_name) if display_name.present?
+  rescue StandardError => e
+    Rails.logger.error "[SessionsController] Failed to fetch Slack display name: #{e.message}"
   end
 end
