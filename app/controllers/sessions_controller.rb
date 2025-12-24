@@ -54,6 +54,12 @@ class SessionsController < ApplicationController
       access_token: token,
       slack_id: identity["slack_id"]
     )
+
+    # Fetch Slack display name if missing
+    if user.slack_id.present? && user.display_name_from_slack.blank?
+      FetchSlackDisplayNamesJob.perform_later
+    end
+
     user
   end
 end

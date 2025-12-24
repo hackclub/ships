@@ -82,6 +82,9 @@ class AirtableJob < ApplicationJob
     # Check for newly viral projects and notify users
     ViralNotificationJob.perform_later
 
+    # Fetch Slack display names for users missing them
+    FetchSlackDisplayNamesJob.perform_later
+
     Rails.logger.info "[AirtableJob] Sync complete. Created: #{created}, Updated: #{updated}, Failed: #{failed}"
   end
 
