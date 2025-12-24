@@ -19,9 +19,9 @@ class RatingStatsJob < ApplicationJob
       scores = ratings.pluck(Arel.sql("originality + technical + usability")).sort
       median = if scores.length.odd?
                  scores[scores.length / 2]
-               else
+      else
                  (scores[(scores.length / 2) - 1] + scores[scores.length / 2]) / 2.0
-               end
+      end
     else
       median = nil
     end

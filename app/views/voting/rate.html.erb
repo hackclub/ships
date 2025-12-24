@@ -43,11 +43,11 @@
           </div>
 
           <div class="card-actions">
-            <% if @project.playable_url.present? %>
-              <%= link_to "🌐 Try Demo", @project.playable_url, class: "btn btn-primary", target: "_blank" %>
+            <% if (demo = safe_external_url(@project.playable_url)) %>
+              <%= link_to "🌐 Try Demo", demo, class: "btn btn-primary", target: "_blank", rel: "noopener noreferrer" %>
             <% end %>
-            <% if @project.code_url.present? %>
-              <%= link_to "💻 View Code", @project.code_url, class: "btn btn-secondary", target: "_blank" %>
+            <% if (code = safe_external_url(@project.code_url)) %>
+              <%= link_to "💻 View Code", code, class: "btn btn-secondary", target: "_blank", rel: "noopener noreferrer" %>
             <% end %>
           </div>
         </div>
