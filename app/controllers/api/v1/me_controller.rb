@@ -18,7 +18,9 @@ module Api
             github_stars: entry.github_stars || 0,
             hours: (entry.hours_spent_actual || entry.hours_spent)&.to_f&.round,
             approved_at: entry.approved_at&.iso8601,
-            country: entry.country
+            country: entry.country,
+            archived_demo: entry.archived_demo,
+            archived_repo: entry.archived_repo
           }
         }
       end

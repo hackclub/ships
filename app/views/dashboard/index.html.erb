@@ -42,6 +42,12 @@
           <% if (code = safe_external_url(entry.code_url)) %>
             <%= link_to "💻 Code", code, class: "btn btn-secondary", target: "_blank", rel: "noopener noreferrer" %>
           <% end %>
+          <% if (archived_demo = safe_external_url(entry.archived_demo)) %>
+            <%= link_to "📦 Archived Demo", archived_demo, class: "btn btn-secondary", target: "_blank", rel: "noopener noreferrer" %>
+          <% end %>
+          <% if (archived_repo = safe_external_url(entry.archived_repo)) %>
+            <%= link_to "📦 Archived Repo", archived_repo, class: "btn btn-secondary", target: "_blank", rel: "noopener noreferrer" %>
+          <% end %>
           <% if entry.viral? %>
             <%= link_to "📈 Virality Stats", fetch_virality_path(entry), class: "btn btn-accent", target: "_blank" %>
           <% end %>
