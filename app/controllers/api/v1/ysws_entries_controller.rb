@@ -11,12 +11,17 @@ module Api
           scope = YswsProjectEntry
             .where.not(ysws: "Boba Drops")
             .select(:airtable_id, :ysws, :approved_at, :code_url, :country, :playable_url,
-                    :description, :github_username, :hours_spent,
-                    :hours_spent_actual, :screenshot_url, :github_stars)
+                    :description, :github_username, :hours_spent, :hours_spent_actual,
+                    :screenshot_url, :github_stars, :email, :archived_demo, :archived_repo)
 
           scope = scope.where("approved_at >= ?", 3.months.ago) unless params[:all] == "true"
 
-          scope.map do |entry|
+          entries_list = scope.to_a
+          emails = entries_list.map(&:email).compact.uniq
+          users_by_email = User.where(email: emails).index_by(&:email)
+
+          entries_list.map do |entry|
+            user = users_by_email[entry.email]
             {
               id: entry.airtable_id,
               ysws: entry.ysws,
@@ -28,7 +33,10 @@ module Api
               github_username: entry.github_username || "null",
               hours: (entry.hours_spent_actual || entry.hours_spent)&.to_f&.round || "null",
               screenshot_url: entry.screenshot_url || "null",
-              github_stars: entry.github_stars || 0
+              github_stars: entry.github_stars || 0,
+              display_name: user&.display_name || "null",
+              archived_demo: entry.archived_demo || "null",
+              archived_repo: entry.archived_repo || "null"
             }
           end
         end
