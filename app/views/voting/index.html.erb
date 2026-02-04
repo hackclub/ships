@@ -18,11 +18,6 @@
     <div id="voting-container" class="voting-grid">
       <% @projects.each do |project| %>
         <div class="vote-card" data-project-id="<%= project.id %>">
-          <% if project.screenshot_url.present? %>
-            <div class="card-screenshot">
-              <img src="<%= project.screenshot_url %>" alt="<%= project.name %>" loading="lazy" />
-            </div>
-          <% end %>
           <div class="vote-card-body">
             <h2 class="vote-card-title"><%= project.name || project.ysws || "Project" %></h2>
             <% if project.ysws && project.name %>

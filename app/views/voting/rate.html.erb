@@ -17,12 +17,6 @@
   <% else %>
     <div class="rate-container">
       <div class="rate-card" data-project-id="<%= @project.id %>">
-        <% if @project.screenshot_url.present? %>
-          <div class="rate-screenshot">
-            <img src="<%= @project.screenshot_url %>" alt="<%= @project.name %>" loading="lazy" />
-          </div>
-        <% end %>
-        
         <div class="rate-card-body">
           <h2 class="rate-card-title"><%= @project.name || @project.ysws || "Project" %></h2>
           <% if @project.ysws && @project.name %>
