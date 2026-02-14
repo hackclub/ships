@@ -8,14 +8,9 @@ class VotingController < ApplicationController
   end
 
   # GET /vote/rate - Category rating page (rate one project at a time)
+  # Temporarily disabled
   def rate
-    @project = YswsProjectEntry
-      .where.not(ysws: "Boba Drops")
-      .where.not(email: current_user.email)
-      .order(Arel.sql("RANDOM()"))
-      .first
-
-    @existing_rating = ProjectRating.find_by(user: current_user, project: @project) if @project
+    redirect_to vote_path, notice: "Project rating is temporarily disabled."
   end
 
   # GET /vote/leaderboard - Combined leaderboards page

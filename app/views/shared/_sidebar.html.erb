@@ -8,14 +8,14 @@
       <span class="sidebar-link-text">Home</span>
     <% end %>
     -->
-    <%= link_to stats_path, class: "sidebar-link", title: "Stats" do %>
+    <%= link_to stats_path, class: "sidebar-link", title: "Stats", data: { turbo: false } do %>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
       <span class="sidebar-link-text">Stats</span>
     <% end %>
     <% if logged_in? %>
-      <%= link_to vote_path, class: "sidebar-link", title: "Vote" do %>
+      <%= link_to vote_path, class: "sidebar-link", title: "Vote", data: { turbo: false } do %>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
         </svg>
@@ -29,7 +29,7 @@
       <span class="sidebar-link-text">API Docs</span>
     <% end %>
     <% if logged_in? %>
-      <%= link_to dash_path, class: "sidebar-link", title: "Dashboard" do %>
+      <%= link_to dash_path, class: "sidebar-link", title: "Dashboard", data: { turbo: false } do %>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
         </svg>

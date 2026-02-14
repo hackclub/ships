@@ -9,7 +9,10 @@ module Api
 
         # POST /api/v1/voting/ratings
         # Creates or updates a user's rating for a project.
+        # Temporarily disabled
         def create
+          return render json: { error: "Project rating is temporarily disabled" }, status: :service_unavailable
+
           project = YswsProjectEntry.find(params.require(:project_id))
 
           if project.email == current_user.email
