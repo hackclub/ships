@@ -7,7 +7,7 @@ module Api
       # GET /api/v1/dashboard
       # Returns the current user's project entries as JSON.
       def index
-        entries = YswsProjectEntry.where(email: current_user.email)
+        entries = YswsProjectEntry.active.where(email: current_user.email)
 
         render json: {
           user: {

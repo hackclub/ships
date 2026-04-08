@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_24_040709) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_08_205325) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -236,6 +236,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_24_040709) do
     t.string "code_url"
     t.string "country"
     t.datetime "created_at", null: false
+    t.datetime "deleted_at"
     t.string "demo_url"
     t.text "description"
     t.integer "elo_matches_count", default: 0, null: false
@@ -258,6 +259,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_24_040709) do
     t.index ["airtable_id"], name: "index_ysws_project_entries_on_airtable_id", unique: true
     t.index ["approved_at"], name: "index_ysws_project_entries_on_approved_at"
     t.index ["country"], name: "index_ysws_project_entries_on_country"
+    t.index ["deleted_at"], name: "index_ysws_project_entries_on_deleted_at"
     t.index ["elo_rating"], name: "index_ysws_project_entries_on_elo_rating"
     t.index ["email"], name: "index_ysws_project_entries_on_email"
     t.index ["github_stars"], name: "index_ysws_project_entries_on_github_stars"

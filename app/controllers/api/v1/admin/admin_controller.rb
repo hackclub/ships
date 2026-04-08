@@ -27,7 +27,7 @@ module Api
         # GET /api/v1/admin/entries
         # Returns all YSWS project entries.
         def entries
-          entries = YswsProjectEntry.order(approved_at: :desc).map do |entry|
+          entries = YswsProjectEntry.active.order(approved_at: :desc).map do |entry|
             {
               id: entry.id,
               airtable_id: entry.airtable_id,
@@ -62,21 +62,22 @@ module Api
               with_slack: User.where.not(slack_id: [ nil, "" ]).count
             },
             entries: {
-              total: YswsProjectEntry.count,
-              approved: YswsProjectEntry.where.not(approved_at: nil).count,
-              pending: YswsProjectEntry.where(approved_at: nil).count,
-              viral: YswsProjectEntry.where("github_stars > 5").count,
-              total_hours: YswsProjectEntry.sum(:hours_spent).to_f.round(1),
-              total_stars: YswsProjectEntry.sum(:github_stars).to_i
+              total: YswsProjectEntry.active.count,
+              approved: YswsProjectEntry.active.where.not(approved_at: nil).count,
+              pending: YswsProjectEntry.active.where(approved_at: nil).count,
+              viral: YswsProjectEntry.active.where("github_stars > 5").count,
+              total_hours: YswsProjectEntry.active.sum(:hours_spent).to_f.round(1),
+              total_stars: YswsProjectEntry.active.sum(:github_stars).to_i,
+              deleted: YswsProjectEntry.deleted.count
             },
-            by_ysws: YswsProjectEntry
+            by_ysws: YswsProjectEntry.active
               .where.not(ysws: [ nil, "" ])
               .group(:ysws)
               .count
               .sort_by { |_, v| -v }
               .to_h,
-            by_country: YswsProjectEntry
-              .group_by_normalized_country(YswsProjectEntry.all),
+            by_country: YswsProjectEntry.active
+              .group_by_normalized_country(YswsProjectEntry.active),
             recent_users: User.order(created_at: :desc).limit(10).map do |u|
               { email: u.email, created_at: u.created_at&.iso8601 }
             end

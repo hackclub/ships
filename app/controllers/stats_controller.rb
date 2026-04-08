@@ -3,14 +3,14 @@ class StatsController < ApplicationController
   # Uses fragment caching for expensive aggregations.
   def index
     stats = Rails.cache.fetch("stats/index", expires_in: 15.minutes) do
-      entries = YswsProjectEntry.all
+      entries = YswsProjectEntry.active
 
       {
         total_projects: entries.count,
         total_hours: entries.sum(:hours_spent).to_f.round,
         total_stars: entries.sum(:github_stars).to_i,
         viral_projects: entries.where("github_stars > 5").count,
-        projects_by_country: YswsProjectEntry
+        projects_by_country: YswsProjectEntry.active
           .group_by_normalized_country(entries)
           .first(15)
           .to_h,

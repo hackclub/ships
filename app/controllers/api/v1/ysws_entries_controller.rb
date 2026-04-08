@@ -8,7 +8,7 @@ module Api
         cache_key = params[:all] == "true" ? "api/v1/ysws_entries/all" : "api/v1/ysws_entries"
 
         entries = Rails.cache.fetch(cache_key, expires_in: 10.minutes) do
-          scope = YswsProjectEntry
+          scope = YswsProjectEntry.active
             .where.not(ysws: "Boba Drops")
             .select(:airtable_id, :ysws, :approved_at, :code_url, :country, :playable_url,
                     :description, :github_username, :hours_spent, :hours_spent_actual,

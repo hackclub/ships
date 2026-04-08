@@ -4,6 +4,9 @@ class YswsProjectEntry < ApplicationRecord
   has_encrypted :map_lat
   has_encrypted :map_long
 
+  scope :active, -> { where(deleted_at: nil) }
+  scope :deleted, -> { where.not(deleted_at: nil) }
+
   has_many :elo_matches_as_winner, class_name: "EloMatch", foreign_key: :winner_project_id, dependent: :destroy
   has_many :elo_matches_as_loser, class_name: "EloMatch", foreign_key: :loser_project_id, dependent: :destroy
   has_many :project_ratings, foreign_key: :project_id, dependent: :destroy

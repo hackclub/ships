@@ -8,7 +8,7 @@ class FetchScreenshotsJob < ApplicationJob
     entries = if entry_ids.present?
       YswsProjectEntry.where(id: entry_ids)
     else
-      YswsProjectEntry.where(screenshot_url: [ nil, "" ])
+      YswsProjectEntry.active.where(screenshot_url: [ nil, "" ])
     end
 
     airtable_ids = entries.pluck(:airtable_id).compact

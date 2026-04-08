@@ -2,7 +2,7 @@ class DashboardController < ApplicationController
   before_action :require_login
 
   def index
-    @users_entries = YswsProjectEntry.where(email: current_user.email)
+    @users_entries = YswsProjectEntry.active.where(email: current_user.email)
 
     # Queue job to fetch missing screenshots in the background
     entries_missing_screenshots = @users_entries.where(screenshot_url: [ nil, "" ])

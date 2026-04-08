@@ -4,7 +4,7 @@ module Api
      before_action :require_login
 
       def index
-        users_projects = YswsProjectEntry.where(email: current_user.email)
+        users_projects = YswsProjectEntry.active.where(email: current_user.email)
 
         render json: users_projects.map { |entry|
           {

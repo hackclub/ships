@@ -68,11 +68,25 @@ class AirtableJob < ApplicationJob
       end
     end
 
+    # Soft-delete records no longer in Airtable (skip in dev because of date filtering)
+    unless Rails.env.development?
+      synced_ids = all_records.each_with_object(Set.new) { |r, set| set << (r["id"] || r["airtable_id"]) }.delete(nil)
+      existing_ids = YswsProjectEntry.pluck(:airtable_id, :deleted_at)
+
+      stale_ids = existing_ids.filter_map { |id, deleted_at| id if deleted_at.nil? && !synced_ids.include?(id) }
+      restored_ids = existing_ids.filter_map { |id, deleted_at| id if deleted_at.present? && synced_ids.include?(id) }
+
+      deleted = stale_ids.any? ? YswsProjectEntry.where(airtable_id: stale_ids).update_all(deleted_at: Time.current) : 0
+      restored = restored_ids.any? ? YswsProjectEntry.where(airtable_id: restored_ids).update_all(deleted_at: nil) : 0
+
+      Rails.logger.info "[AirtableJob] Soft-deleted: #{deleted}, Restored: #{restored}"
+    end
+
     # Invalidate cache after sync
     Rails.cache.delete("api/v1/ysws_entries")
 
     # Queue image caching for entries with screenshots
-    YswsProjectEntry.where.not(screenshot_url: [ nil, "" ]).find_each do |entry|
+    YswsProjectEntry.active.where.not(screenshot_url: [ nil, "" ]).find_each do |entry|
       CacheImageJob.perform_later(entry.airtable_id, entry.screenshot_url)
     end
 

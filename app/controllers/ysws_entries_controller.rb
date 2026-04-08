@@ -3,7 +3,7 @@ class YswsEntriesController < ApplicationController
 
   # Fetches GitHub stars for a project entry.
   def fetch_stars
-    entry = YswsProjectEntry.find(params[:id])
+    entry = YswsProjectEntry.active.find(params[:id])
 
     unless entry.email == current_user.email
       head :forbidden
@@ -22,7 +22,7 @@ class YswsEntriesController < ApplicationController
   # Fetches virality stats from Airtable including linked mentions.
   # Cached for 1 hour to prevent rate limits.
   def fetch_virality
-    entry = YswsProjectEntry.find(params[:id])
+    entry = YswsProjectEntry.active.find(params[:id])
 
     unless entry.email == current_user.email
       head :forbidden
