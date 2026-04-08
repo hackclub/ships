@@ -14,7 +14,7 @@ module Api
       def show
         airtable_id = params[:id]
 
-        entry = YswsProjectEntry.find_by(airtable_id: airtable_id)
+        entry = YswsProjectEntry.active.find_by(airtable_id: airtable_id)
         unless entry
           return render json: { error: "Entry not found" }, status: :not_found
         end

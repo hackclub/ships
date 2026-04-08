@@ -5,7 +5,7 @@ module Api
       # GET /api/v1/stats
       # Returns aggregated statistics as JSON.
       def index
-        entries = YswsProjectEntry.all
+        entries = YswsProjectEntry.active
 
         stats = Rails.cache.fetch("api/v1/stats", expires_in: 15.minutes) do
           {
@@ -13,7 +13,7 @@ module Api
             total_hours: entries.sum(:hours_spent).to_f.round,
             total_stars: entries.sum(:github_stars).to_i,
             viral_projects: entries.where("github_stars > 5").count,
-            projects_by_country: YswsProjectEntry
+            projects_by_country: YswsProjectEntry.active
               .group_by_normalized_country(entries)
               .first(15)
               .to_h,

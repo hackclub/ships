@@ -13,7 +13,7 @@ module Api
         def create
           return render json: { error: "Project rating is temporarily disabled" }, status: :service_unavailable
 
-          project = YswsProjectEntry.find(params.require(:project_id))
+          project = YswsProjectEntry.active.find(params.require(:project_id))
 
           if project.email == current_user.email
             return render json: { error: "Cannot rate your own project" }, status: :unprocessable_entity
@@ -50,7 +50,7 @@ module Api
         # GET /api/v1/voting/ratings/:project_id
         # Returns the current user's rating for a project.
         def show
-          project = YswsProjectEntry.find(params[:project_id])
+          project = YswsProjectEntry.active.find(params[:project_id])
           rating = ProjectRating.find_by(user: current_user, project: project)
 
           render json: {
@@ -70,7 +70,7 @@ module Api
           min_ratings = params.fetch(:min_ratings, 3).to_i
           limit = params.fetch(:limit, 50).to_i.clamp(1, 200)
 
-          projects = YswsProjectEntry
+          projects = YswsProjectEntry.active
             .where("ratings_median IS NOT NULL AND ratings_count >= ?", min_ratings)
             .order(ratings_median: :desc, ratings_count: :desc)
             .limit(limit)

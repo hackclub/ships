@@ -8,7 +8,7 @@ module Api
         # GET /api/v1/voting/elo/matchup
         # Returns two random projects for the user to compare.
         def matchup
-          projects = YswsProjectEntry
+          projects = YswsProjectEntry.active
             .where.not(ysws: "Boba Drops")
             .where.not(email: current_user.email)
             .where("elo_matches_count < ?", 100)
@@ -27,8 +27,8 @@ module Api
         # POST /api/v1/voting/elo/vote
         # Records a vote where winner_id beats loser_id.
         def vote
-          winner = YswsProjectEntry.find(params.require(:winner_id))
-          loser = YswsProjectEntry.find(params.require(:loser_id))
+          winner = YswsProjectEntry.active.find(params.require(:winner_id))
+          loser = YswsProjectEntry.active.find(params.require(:loser_id))
 
           if winner.id == loser.id
             return render json: { error: "Projects must be different" }, status: :unprocessable_entity
@@ -56,7 +56,7 @@ module Api
           min_matches = params.fetch(:min_matches, 5).to_i
           limit = params.fetch(:limit, 50).to_i.clamp(1, 200)
 
-          projects = YswsProjectEntry
+          projects = YswsProjectEntry.active
             .where("elo_matches_count >= ?", min_matches)
             .order(elo_rating: :desc)
             .limit(limit)
