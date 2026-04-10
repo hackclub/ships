@@ -3,8 +3,8 @@
 class HackclubAirtable
   BASE_URL = "https://api2.hackclub.com/v0.2".freeze
   BASE_ID = "Ships".freeze
-  OPEN_TIMEOUT = 10
-  TIMEOUT = 60
+  OPEN_TIMEOUT = 60
+  TIMEOUT = 300
 
   class << self
     # Fetches all records from a table.
