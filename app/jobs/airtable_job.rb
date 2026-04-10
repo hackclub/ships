@@ -26,6 +26,7 @@ class AirtableJob < ApplicationJob
     updated = 0
     failed = 0
     batch_count = 0
+    synced_ids = Set.new
 
     # DEV ONLY: Filter to projects from last 3 months for testing
     if Rails.env.development?
@@ -47,6 +48,7 @@ class AirtableJob < ApplicationJob
       batch.each do |record|
         attrs = map_record_to_attrs(record)
         next if attrs[:airtable_id].blank?
+        synced_ids << attrs[:airtable_id]
 
         entry = YswsProjectEntry.find_or_initialize_by(airtable_id: attrs[:airtable_id])
         is_new = entry.new_record?
@@ -70,16 +72,21 @@ class AirtableJob < ApplicationJob
 
     # Soft-delete records no longer in Airtable (skip in dev because of date filtering)
     unless Rails.env.development?
-      synced_ids = all_records.each_with_object(Set.new) { |r, set| set << (r["id"] || r["airtable_id"]) }.delete(nil)
-      existing_ids = YswsProjectEntry.pluck(:airtable_id, :deleted_at)
+      if synced_ids.empty?
+        Rails.logger.warn "[AirtableJob] No airtable records found, skipping soft deletion..."
+      else
+        Rails.logger.info "[AirtableJob] Soft-deleting entries not in Airtable (#{synced_ids.size} synced IDs)"
 
-      stale_ids = existing_ids.filter_map { |id, deleted_at| id if deleted_at.nil? && !synced_ids.include?(id) }
-      restored_ids = existing_ids.filter_map { |id, deleted_at| id if deleted_at.present? && synced_ids.include?(id) }
+        existing_ids = YswsProjectEntry.pluck(:airtable_id, :deleted_at)
 
-      deleted = stale_ids.any? ? YswsProjectEntry.where(airtable_id: stale_ids).update_all(deleted_at: Time.current) : 0
-      restored = restored_ids.any? ? YswsProjectEntry.where(airtable_id: restored_ids).update_all(deleted_at: nil) : 0
+        stale_ids = existing_ids.filter_map { |id, deleted_at| id if deleted_at.nil? && !synced_ids.include?(id) }
+        restored_ids = existing_ids.filter_map { |id, deleted_at| id if deleted_at.present? && synced_ids.include?(id) }
 
-      Rails.logger.info "[AirtableJob] Soft-deleted: #{deleted}, Restored: #{restored}"
+        deleted = stale_ids.any? ? YswsProjectEntry.where(airtable_id: stale_ids).update_all(deleted_at: Time.current) : 0
+        restored = restored_ids.any? ? YswsProjectEntry.where(airtable_id: restored_ids).update_all(deleted_at: nil) : 0
+
+        Rails.logger.info "[AirtableJob] Soft-deleted: #{deleted}, Restored: #{restored}"
+      end
     end
 
     # Invalidate cache after sync
