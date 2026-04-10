@@ -54,7 +54,7 @@ async function loadShips() {
         return JSON.parse(cachedShips);
     }
 
-    const url = "/api/v1/ysws_entries";
+    const url = "/api/v1/ysws_entries?boba=false";
     const response = await fetch(url);
     if (!response?.body) return;
 
