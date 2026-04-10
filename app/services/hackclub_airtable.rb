@@ -3,6 +3,8 @@
 class HackclubAirtable
   BASE_URL = "https://api2.hackclub.com/v0.2".freeze
   BASE_ID = "Ships".freeze
+  OPEN_TIMEOUT = 10
+  TIMEOUT = 60
 
   class << self
     # Fetches all records from a table.
@@ -65,6 +67,8 @@ class HackclubAirtable
     def connection
       @connection ||= Faraday.new do |f|
         f.request :url_encoded
+        f.options.open_timeout = OPEN_TIMEOUT
+        f.options.timeout = TIMEOUT
         f.adapter Faraday.default_adapter
       end
     end
