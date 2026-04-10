@@ -4,15 +4,19 @@ module Api
       # GET /api/v1/ysws_entries
       # Returns YSWS project entries from the last 3 months as JSON, cached for 10 minutes.
       # Use ?all=true to get all entries (slower).
+      # Use ?boba=false to exclude "Boba Drops" entries.
       def index
-        cache_key = params[:all] == "true" ? "api/v1/ysws_entries/all" : "api/v1/ysws_entries"
+        cache_scope = params[:all] == "true" ? "all" : "recent"
+        exclude_boba = params[:boba] == "false" ? "no_boba" : "boba"
+        cache_key = "api/v1/ysws_entries/#{cache_scope}/#{boba_drops}"
 
         entries = Rails.cache.fetch(cache_key, expires_in: 10.minutes) do
           scope = YswsProjectEntry.active
-            .where.not(ysws: "Boba Drops")
             .select(:airtable_id, :ysws, :approved_at, :code_url, :country, :playable_url,
                     :description, :github_username, :hours_spent, :hours_spent_actual,
                     :screenshot_url, :github_stars, :email, :archived_demo, :archived_repo)
+
+          scope = scope.where.not(ysws: "Boba Drops") if exclude_boba
 
           scope = scope.where("approved_at >= ?", 3.months.ago) unless params[:all] == "true"
 
