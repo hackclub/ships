@@ -8,7 +8,7 @@ module Api
       def index
         cache_scope = params[:all] == "true" ? "all" : "recent"
         exclude_boba = params[:boba] == "false" ? "no_boba" : "boba"
-        cache_key = "api/v1/ysws_entries/#{cache_scope}/#{boba_drops}"
+        cache_key = "api/v1/ysws_entries/#{cache_scope}/#{exclude_boba}"
 
         entries = Rails.cache.fetch(cache_key, expires_in: 10.minutes) do
           scope = YswsProjectEntry.active
