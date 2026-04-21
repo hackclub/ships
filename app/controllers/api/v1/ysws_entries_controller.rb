@@ -25,9 +25,9 @@ module Api
           emails = entries_list.map(&:email).compact.uniq
           users_by_email = User.where(email: emails).index_by(&:email)
 
-          entries_list.map do |entry|
-            user = users_by_email[entry.email]
-            {
+           entries_list.map do |entry|
+             user = users_by_email[entry.email]
+             {
               id: entry.airtable_id,
               ysws: entry.ysws,
               approved_at: entry.approved_at&.to_i || "null",
@@ -40,10 +40,11 @@ module Api
               screenshot_url: entry.screenshot_url || "null",
               github_stars: entry.github_stars || 0,
               display_name: user&.display_name || "null",
+              slack_id: user&.slack_id,
               archived_demo: entry.archived_demo || "null",
               archived_repo: entry.archived_repo || "null"
-            }
-          end
+             }
+           end
         end
 
         # Set HTTP caching headers for CDN/browser caching
