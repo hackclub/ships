@@ -33,7 +33,8 @@ class DocsController < ApplicationController
           { field: "github_username", type: "string|null", description: "GitHub username" },
           { field: "heard_through", type: "string|null", description: "How they heard about YSWS" },
           { field: "hours", type: "number|null", description: "Hours spent on project" },
-          { field: "screenshot_url", type: "string|null", description: "Screenshot URL" }
+          { field: "screenshot_url", type: "string|null", description: "Screenshot URL" },
+          { field: "slack_id", type: "string|null", description: "Creator Slack user ID" }
         ]
       },
       {

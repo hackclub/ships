@@ -40,6 +40,7 @@ module Api
               screenshot_url: entry.screenshot_url || "null",
               github_stars: entry.github_stars || 0,
               display_name: user&.display_name || "null",
+              slack_id: user&.slack_id || "null",
               archived_demo: entry.archived_demo || "null",
               archived_repo: entry.archived_repo || "null"
             }
