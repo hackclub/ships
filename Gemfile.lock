@@ -224,7 +224,7 @@ GEM
       uri (>= 0.11.1)
     net-http-persistent (4.0.6)
       connection_pool (~> 2.2, >= 2.2.4)
-    net-imap (0.6.2)
+    net-imap (0.6.4)
       date
       net-protocol
     net-pop (0.1.2)
@@ -460,7 +460,7 @@ GEM
     thruster (0.1.17)
     thruster (0.1.17-aarch64-linux)
     thruster (0.1.17-x86_64-linux)
-    timeout (0.6.0)
+    timeout (0.6.1)
     tsort (0.2.0)
     turbo-rails (2.0.20)
       actionpack (>= 7.1.0)
